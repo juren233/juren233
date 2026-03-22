@@ -124,7 +124,7 @@ describe("createApp", () => {
     expect(html).toContain("juren233.top");
     expect(html).toContain("share.juren233.top");
     expect(html).toContain("Brand index");
-    expect(html).toContain("Curated entries");
+    expect(html).toContain("精选入口");
     expect(html).toContain("abstract-brand-mark");
 
     const feed = await app.request("/api/feed");
@@ -132,3 +132,4 @@ describe("createApp", () => {
     expect(feedJson.items).toHaveLength(1);
   });
 });
+
