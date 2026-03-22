@@ -100,11 +100,22 @@ describe("createApp", () => {
     const app = createApp({
       listPosts: async () => [
         {
-          id: "share-launch",
-          title: "share 已进入持续维护",
-          body: "今天把 share.juren233.top 放进主站精选入口。",
-          tags: ["share", "站点"],
-          slug: "share-launch",
+          id: "older-note",
+          title: "更早的动态",
+          body: "这条动态不应该出现在首页首条展示里。",
+          tags: ["archive"],
+          slug: "older-note",
+          status: "published",
+          pinned: false,
+          createdAt: "2026-03-21T08:00:00.000Z",
+          updatedAt: "2026-03-21T08:00:00.000Z",
+        },
+        {
+          id: "latest-note",
+          title: "最新公告",
+          body: "这是首页唯一展示的一条动态。",
+          tags: ["brand", "update"],
+          slug: "latest-note",
           status: "published",
           pinned: true,
           createdAt: "2026-03-22T08:00:00.000Z",
@@ -122,15 +133,17 @@ describe("createApp", () => {
     const html = await home.text();
     expect(home.status).toBe(200);
     expect(html).toContain("juren233.top");
-    expect(html).toContain("share.juren233.top");
     expect(html).toContain("打开合作申请");
     expect(html).toContain("cooperation-modal");
     expect(html).toContain("最新动态");
-    expect(html).not.toContain("pods.juren233.top");
+    expect(html).toContain("最新公告");
+    expect(html).not.toContain("更早的动态");
+    expect(html).not.toContain("进入 share");
+    expect(html).not.toContain("Selected access");
 
     const feed = await app.request("/api/feed");
     const feedJson = (await feed.json()) as { items: unknown[] };
-    expect(feedJson.items).toHaveLength(1);
+    expect(feedJson.items).toHaveLength(2);
   });
 });
 
