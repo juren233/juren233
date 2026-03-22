@@ -1,0 +1,8 @@
+name = "juren233web"
+main = "src/index.ts"
+compatibility_date = "2026-03-22"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "juren233web"
+database_id = "replace-with-your-d1-database-id"
