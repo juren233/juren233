@@ -123,6 +123,9 @@ describe("createApp", () => {
     expect(home.status).toBe(200);
     expect(html).toContain("juren233.top");
     expect(html).toContain("share.juren233.top");
+    expect(html).toContain("Brand index");
+    expect(html).toContain("Curated entries");
+    expect(html).toContain("abstract-brand-mark");
 
     const feed = await app.request("/api/feed");
     const feedJson = (await feed.json()) as { items: unknown[] };
