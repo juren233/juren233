@@ -209,13 +209,6 @@ textarea{min-height:140px;resize:vertical}
   will-change:transform;
 }
 .home-screen{
-  --screen-progress:0;
-  --screen-distance:1;
-  --screen-shift:72px;
-  --screen-scale:.9;
-  --screen-alpha:.16;
-  --screen-tilt:0deg;
-  --screen-fade:.1;
   position:relative;
   height:100svh;
   padding:clamp(32px,7vw,84px) var(--gutter);
@@ -228,9 +221,7 @@ textarea{min-height:140px;resize:vertical}
   position:absolute;
   inset:0;
   background:linear-gradient(180deg,rgba(255,255,255,.22),transparent 26%,transparent 74%,rgba(17,19,24,.05));
-  opacity:calc(.14 + var(--screen-progress) * .34);
-  transform:translate3d(0,calc(var(--screen-shift) * -.18),0) scale(calc(1.08 - var(--screen-progress) * .08));
-  transition:opacity 90ms linear,transform 90ms linear;
+  opacity:.24;
   pointer-events:none;
 }
 .home-inner{
@@ -240,13 +231,6 @@ textarea{min-height:140px;resize:vertical}
   margin:0 auto;
   display:grid;
   gap:var(--section-gap);
-  opacity:var(--screen-alpha);
-  transform:
-    translate3d(0,var(--screen-shift),0)
-    scale(var(--screen-scale))
-    rotate(calc(var(--screen-tilt) * .35));
-  transition:opacity 90ms linear,transform 90ms linear;
-  will-change:transform,opacity;
 }
 .brand-screen .home-inner,.closing-screen .home-inner{align-content:end}
 .brand-title{
@@ -441,46 +425,20 @@ function home(posts: Post[]) {
       const form=document.getElementById("cooperation-form");
       const message=document.getElementById("form-message");
       const screens=homeTrack instanceof HTMLElement?Array.from(homeTrack.querySelectorAll(".home-screen")):[];
-      let frame=0;
       let currentIndex=0;
       let currentOffset=0;
-      let targetOffset=0;
       let animationFrame=0;
-      let animationToken=0;
       let lastWheelAt=0;
       const prefersReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
       const easeInOutCubic=(t)=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
       const clampIndex=(value)=>Math.max(0,Math.min(screens.length-1,value));
-      const renderScreens=(offsetY)=>{
-        if(!screens.length)return;
-        const viewport=window.innerHeight||document.documentElement.clientHeight||1;
-        screens.forEach((screen,index)=>{
-          const center=index*viewport+viewport/2;
-          const offset=(center-(offsetY+viewport/2))/viewport;
-          const distance=Math.min(Math.abs(offset),1.25);
-          const progress=Math.max(0,1-distance);
-          const eased=1-Math.pow(1-progress,2.2);
-          const shift=offset*96;
-          const scale=.9+eased*.1;
-          const alpha=.16+eased*.84;
-          const tilt=offset*-6;
-          screen.style.setProperty("--screen-progress",eased.toFixed(3));
-          screen.style.setProperty("--screen-distance",distance.toFixed(3));
-          screen.style.setProperty("--screen-shift",shift.toFixed(1)+"px");
-          screen.style.setProperty("--screen-scale",scale.toFixed(3));
-          screen.style.setProperty("--screen-alpha",alpha.toFixed(3));
-          screen.style.setProperty("--screen-tilt",tilt.toFixed(2)+"deg");
-        });
-      };
       const paintOffset=(offsetY)=>{
         currentOffset=offsetY;
         if(homeTrack instanceof HTMLElement)homeTrack.style.transform="translate3d(0,"+(-offsetY).toFixed(2)+"px,0)";
-        renderScreens(offsetY);
       };
       const syncPage=()=>{
         const viewport=window.innerHeight||document.documentElement.clientHeight||1;
-        targetOffset=currentIndex*viewport;
-        paintOffset(targetOffset);
+        paintOffset(currentIndex*viewport);
       };
       const animateTo=(index)=>{
         if(!screens.length)return;
@@ -488,7 +446,6 @@ function home(posts: Post[]) {
         const viewport=window.innerHeight||document.documentElement.clientHeight||1;
         const startOffset=currentOffset;
         const nextOffset=currentIndex*viewport;
-        targetOffset=nextOffset;
         if(prefersReducedMotion.matches){
           if(animationFrame)cancelAnimationFrame(animationFrame);
           paintOffset(nextOffset);
@@ -496,10 +453,8 @@ function home(posts: Post[]) {
         }
         const startTime=performance.now();
         const duration=920;
-        const token=++animationToken;
         if(animationFrame)cancelAnimationFrame(animationFrame);
         const tick=(now)=>{
-          if(token!==animationToken)return;
           const progress=Math.min((now-startTime)/duration,1);
           const eased=easeInOutCubic(progress);
           paintOffset(startOffset+(nextOffset-startOffset)*eased);
@@ -537,8 +492,7 @@ function home(posts: Post[]) {
       syncPage();
       homeScroller?.addEventListener("wheel",onWheel,{passive:false});
       window.addEventListener("resize",()=>{
-        if(frame)cancelAnimationFrame(frame);
-        frame=requestAnimationFrame(syncPage);
+        syncPage();
       });
       window.addEventListener("keydown",(event)=>{
         if(event.key==="Escape"){
