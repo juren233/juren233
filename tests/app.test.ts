@@ -140,7 +140,7 @@ describe("createApp", () => {
     expect(html).toContain("最新公告");
     expect(html).not.toContain("更早的动态");
     expect(html).toContain("当前更新");
-    expect(html).toContain("scroll-snap-type:y proximity");
+    expect(html).toContain("scroll-snap-type:y mandatory");
     expect(html).not.toContain("stage poster");
     expect(html).not.toContain("poster");
     expect(html).not.toContain("blur");
