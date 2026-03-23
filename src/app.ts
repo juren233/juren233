@@ -38,12 +38,12 @@ const css = `
   --content: 1200px;
   --transition: 280ms cubic-bezier(.22,1,.36,1);
   --section-gap: clamp(28px,5vw,64px);
-  --fluid-a: rgba(182,210,255,.42);
-  --fluid-b: rgba(255,199,223,.38);
-  --fluid-c: rgba(222,242,228,.34);
-  --fluid-d: rgba(255,222,176,.28);
-  --fluid-e: rgba(187,208,255,.24);
-  --fluid-glow: rgba(255,255,255,.32);
+  --fluid-a: rgba(84,118,255,.54);
+  --fluid-b: rgba(255,84,150,.5);
+  --fluid-c: rgba(42,210,192,.46);
+  --fluid-d: rgba(255,164,68,.44);
+  --fluid-e: rgba(160,106,255,.4);
+  --fluid-glow: rgba(255,255,255,.14);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -248,7 +248,7 @@ textarea{min-height:140px;resize:vertical}
   z-index:0;
   pointer-events:none;
   overflow:hidden;
-  filter:saturate(114%);
+  filter:saturate(142%) contrast(108%);
 }
 .fluid-canvas-el{
   position:absolute;
@@ -256,8 +256,8 @@ textarea{min-height:140px;resize:vertical}
   width:120%;
   height:120%;
   display:block;
-  opacity:.52;
-  filter:blur(22px) saturate(108%) contrast(96%);
+  opacity:.76;
+  filter:blur(28px) saturate(156%) contrast(112%);
   transform:translate3d(0,0,0);
   will-change:transform;
 }
@@ -394,11 +394,11 @@ textarea{min-height:140px;resize:vertical}
     --line:rgba(255,255,255,.1);
     --accent:#f3efe7;
     --accent-text:#111318;
-    --fluid-a: rgba(86,126,255,.26);
-    --fluid-b: rgba(255,112,168,.22);
-    --fluid-c: rgba(92,218,190,.18);
-    --fluid-d: rgba(255,185,92,.14);
-    --fluid-e: rgba(149,168,255,.12);
+    --fluid-a: rgba(76,116,255,.52);
+    --fluid-b: rgba(255,82,156,.46);
+    --fluid-c: rgba(34,212,188,.4);
+    --fluid-d: rgba(255,166,78,.34);
+    --fluid-e: rgba(158,110,255,.32);
     --fluid-glow: rgba(255,255,255,.08);
   }
   .paged-home::before{
@@ -570,19 +570,39 @@ function home(posts: Post[]) {
         let speedB=1;
         let isMobile=window.matchMedia("(max-width: 720px)").matches;
         let lastRenderAt=0;
+        let pendingWidth=window.innerWidth||1;
+        let pendingHeight=window.innerHeight||1;
+        let pendingDpr=Math.min(window.devicePixelRatio||1,1.5);
+        let resizeTimer=0;
         const styleOf=(name)=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
         const parseColor=(value)=>{
           const parts=value.match(/[\\d.]+/g);
           return parts && parts.length>=3 ? [Number(parts[0]),Number(parts[1]),Number(parts[2])] : [255,255,255];
         };
-        const resizeFluid=()=>{
-          dpr=Math.min(window.devicePixelRatio||1,1.5);
-          width=Math.max(window.innerWidth,1);
-          height=Math.max(window.innerHeight,1);
-          isMobile=window.matchMedia("(max-width: 720px)").matches;
+        const rebuildFluidBuffers=()=>{
+          dpr=pendingDpr;
+          width=pendingWidth;
+          height=pendingHeight;
           fluidCanvas.width=Math.round(width*dpr);
           fluidCanvas.height=Math.round(height*dpr);
           ctx.setTransform(dpr,0,0,dpr,0,0);
+          ctx.imageSmoothingEnabled=true;
+          fieldWidth=Math.max(isMobile?88:148,Math.round(width/(isMobile?14:10)));
+          fieldHeight=Math.max(isMobile?64:104,Math.round(height/(isMobile?14:10)));
+          if(!(fieldCanvas instanceof HTMLCanvasElement))fieldCanvas=document.createElement("canvas");
+          fieldCanvas.width=fieldWidth;
+          fieldCanvas.height=fieldHeight;
+          fieldCtx=fieldCanvas.getContext("2d");
+          fieldImage=fieldCtx?fieldCtx.createImageData(fieldWidth,fieldHeight):null;
+          lastRenderAt=0;
+        };
+        const resizeFluid=(forcePalette=false)=>{
+          pendingDpr=Math.min(window.devicePixelRatio||1,1.5);
+          pendingWidth=Math.max(window.innerWidth,1);
+          pendingHeight=Math.max(window.innerHeight,1);
+          isMobile=window.matchMedia("(max-width: 720px)").matches;
+          width=pendingWidth;
+          height=pendingHeight;
           if(!palette.length){
             palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d"),styleOf("--fluid-e")].map(parseColor);
             for(let i=palette.length-1;i>0;i--){
@@ -601,13 +621,15 @@ function home(posts: Post[]) {
             speedA=.88+Math.random()*.34;
             speedB=.9+Math.random()*.32;
           }
-          fieldWidth=Math.max(isMobile?100:160,Math.round(width/(isMobile?12:8)));
-          fieldHeight=Math.max(isMobile?72:110,Math.round(height/(isMobile?12:8)));
-          fieldCanvas=document.createElement("canvas");
-          fieldCanvas.width=fieldWidth;
-          fieldCanvas.height=fieldHeight;
-          fieldCtx=fieldCanvas.getContext("2d");
-          fieldImage=fieldCtx?fieldCtx.createImageData(fieldWidth,fieldHeight):null;
+          if(forcePalette){
+            rebuildFluidBuffers();
+            return;
+          }
+          if(resizeTimer)clearTimeout(resizeTimer);
+          resizeTimer=window.setTimeout(()=>{
+            rebuildFluidBuffers();
+            resizeTimer=0;
+          },160);
         };
         const smoothstep=(edge0,edge1,value)=>{
           const t=Math.max(0,Math.min(1,(value-edge0)/(edge1-edge0||1)));
@@ -623,8 +645,8 @@ function home(posts: Post[]) {
         const renderField=(time)=>{
           if(!fieldCtx || !fieldCanvas || !fieldImage)return;
           const data=fieldImage.data;
-          const threshold=.62;
-          const falloff=.96;
+          const threshold=.54;
+          const falloff=.9;
           for(let y=0;y<fieldHeight;y++){
             for(let x=0;x<fieldWidth;x++){
               const i=(y*fieldWidth+x)*4;
@@ -644,57 +666,58 @@ function home(posts: Post[]) {
               const maskC=radialMask(nx,ny,anchors[2]);
               const maskD=radialMask(nx,ny,anchors[3]);
               const maskE=radialMask(nx,ny,anchors[4]);
-              const zoneA=maskA*(.7+.3*bandA);
-              const zoneB=maskB*(.66+.34*bandB);
-              const zoneC=maskC*(.62+.38*bandC);
-              const zoneD=maskD*(.58+.42*bandD);
-              const zoneE=maskE*(.64+.36*bandE);
-              const shared=mix(bandA,bandC,.5)*.06+mix(bandB,bandE,.5)*.05+bandD*.04;
-              const density=(zoneA+zoneB+zoneC+zoneD+zoneE+shared)*.92;
+              const zoneA=Math.pow(maskA,.84)*(.62+.38*bandA);
+              const zoneB=Math.pow(maskB,.88)*(.6+.4*bandB);
+              const zoneC=Math.pow(maskC,.9)*(.58+.42*bandC);
+              const zoneD=Math.pow(maskD,.92)*(.56+.44*bandD);
+              const zoneE=Math.pow(maskE,.86)*(.6+.4*bandE);
+              const shared=mix(bandA,bandC,.5)*.03+mix(bandB,bandE,.5)*.025+bandD*.02;
+              const density=(zoneA+zoneB+zoneC+zoneD+zoneE+shared)*.84;
               const alpha=smoothstep(threshold,falloff,density);
               if(alpha<=.001){
                 data[i]=0; data[i+1]=0; data[i+2]=0; data[i+3]=0;
                 continue;
               }
-              const edge=1-Math.pow(1-alpha,1.6);
-              const wa=.02+zoneA*.96+bandA*.06;
-              const wb=.02+zoneB*.9+bandB*.06;
-              const wc=.02+zoneC*.86+bandC*.06;
-              const wd=.02+zoneD*.82+bandD*.06;
-              const we=.02+zoneE*.88+bandE*.06;
-              const r=Math.min(255,palette[0][0]*wa*.8+palette[1][0]*wb*.72+palette[2][0]*wc*.66+palette[3][0]*wd*.58+palette[4][0]*we*.68);
-              const g=Math.min(255,palette[0][1]*wa*.8+palette[1][1]*wb*.72+palette[2][1]*wc*.66+palette[3][1]*wd*.58+palette[4][1]*we*.68);
-              const b=Math.min(255,palette[0][2]*wa*.8+palette[1][2]*wb*.72+palette[2][2]*wc*.66+palette[3][2]*wd*.58+palette[4][2]*we*.68);
-              const colorPresence=Math.min(1,(wa+wb+wc+wd+we)/1.28);
+              const edge=1-Math.pow(1-alpha,1.34);
+              const wa=.01+zoneA*1.22+bandA*.08;
+              const wb=.01+zoneB*1.18+bandB*.08;
+              const wc=.01+zoneC*1.12+bandC*.08;
+              const wd=.01+zoneD*1.08+bandD*.08;
+              const we=.01+zoneE*1.14+bandE*.08;
+              const r=Math.min(255,palette[0][0]*wa+palette[1][0]*wb+palette[2][0]*wc+palette[3][0]*wd+palette[4][0]*we);
+              const g=Math.min(255,palette[0][1]*wa+palette[1][1]*wb+palette[2][1]*wc+palette[3][1]*wd+palette[4][1]*we);
+              const b=Math.min(255,palette[0][2]*wa+palette[1][2]*wb+palette[2][2]*wc+palette[3][2]*wd+palette[4][2]*we);
+              const colorPresence=Math.min(1,(wa+wb+wc+wd+we)/1.6);
               data[i]=Math.round(r);
               data[i+1]=Math.round(g);
               data[i+2]=Math.round(b);
-              data[i+3]=Math.round(edge*colorPresence*(prefersDark.matches?168:104));
+              data[i+3]=Math.round(edge*colorPresence*(prefersDark.matches?208:170));
             }
           }
           fieldCtx.putImageData(fieldImage,0,0);
         };
         const frameFluid=(time)=>{
           fluidFrame=requestAnimationFrame(frameFluid);
-          const frameBudget=isMobile?1000/18:1000/28;
+          const frameBudget=isMobile?1000/16:1000/26;
           if(time-lastRenderAt<frameBudget)return;
           lastRenderAt=time;
-          ctx.globalCompositeOperation="source-over";
-          ctx.fillStyle=prefersDark.matches?"rgba(16,18,23,.055)":"rgba(244,241,234,.05)";
-          ctx.fillRect(0,0,width,height);
+          ctx.clearRect(0,0,width,height);
           renderField(time);
           if(fieldCanvas){
-            ctx.globalCompositeOperation=prefersDark.matches?"screen":"multiply";
-            ctx.globalAlpha=prefersDark.matches ? .72 : .46;
+            ctx.globalCompositeOperation="source-over";
+            ctx.globalAlpha=prefersDark.matches ? .88 : .82;
             ctx.imageSmoothingEnabled=true;
             ctx.drawImage(fieldCanvas,0,0,fieldWidth,fieldHeight,0,0,width,height);
             ctx.globalAlpha=1;
           }
         };
-        resizeFluid();
+        resizeFluid(true);
         frameFluid(performance.now());
         window.addEventListener("resize",resizeFluid);
-        prefersDark.addEventListener?.("change",resizeFluid);
+        prefersDark.addEventListener?.("change",()=>{
+          palette=[];
+          resizeFluid(true);
+        });
       };
       const clearClosingReveal=(hide=true)=>{
         if(closingRevealStartTimer){
