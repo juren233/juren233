@@ -38,6 +38,11 @@ const css = `
   --content: 1200px;
   --transition: 280ms cubic-bezier(.22,1,.36,1);
   --section-gap: clamp(28px,5vw,64px);
+  --fluid-a: rgba(182,210,255,.42);
+  --fluid-b: rgba(255,199,223,.38);
+  --fluid-c: rgba(222,242,228,.34);
+  --fluid-d: rgba(255,222,176,.28);
+  --fluid-glow: rgba(255,255,255,.32);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -209,10 +214,90 @@ textarea{min-height:140px;resize:vertical}
   overflow:hidden;
   isolation:isolate;
 }
+.fluid-bg{
+  position:absolute;
+  inset:-16%;
+  z-index:0;
+  pointer-events:none;
+  overflow:hidden;
+}
+.fluid-blob{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(84px);
+  opacity:.92;
+  transform:translate3d(0,0,0);
+  will-change:transform,opacity;
+}
+.fluid-blob::after{
+  content:"";
+  position:absolute;
+  inset:14%;
+  border-radius:50%;
+  background:radial-gradient(circle,var(--fluid-glow),transparent 68%);
+  opacity:.5;
+}
+.fluid-blob-a{
+  width:42vw;
+  height:42vw;
+  min-width:320px;
+  min-height:320px;
+  left:-8vw;
+  top:-10vh;
+  background:radial-gradient(circle at 36% 34%,var(--fluid-a),transparent 70%);
+  animation:fluid-drift-a 18s ease-in-out infinite alternate;
+}
+.fluid-blob-b{
+  width:34vw;
+  height:34vw;
+  min-width:280px;
+  min-height:280px;
+  right:-6vw;
+  top:16vh;
+  background:radial-gradient(circle at 58% 42%,var(--fluid-b),transparent 72%);
+  animation:fluid-drift-b 24s ease-in-out infinite alternate;
+}
+.fluid-blob-c{
+  width:30vw;
+  height:30vw;
+  min-width:240px;
+  min-height:240px;
+  left:24vw;
+  bottom:-10vh;
+  background:radial-gradient(circle at 42% 56%,var(--fluid-c),transparent 72%);
+  animation:fluid-drift-c 21s ease-in-out infinite alternate;
+}
+.fluid-blob-d{
+  width:28vw;
+  height:28vw;
+  min-width:220px;
+  min-height:220px;
+  right:18vw;
+  bottom:8vh;
+  background:radial-gradient(circle at 54% 48%,var(--fluid-d),transparent 74%);
+  animation:fluid-drift-d 27s ease-in-out infinite alternate;
+}
+@keyframes fluid-drift-a{
+  0%{transform:translate3d(-3vw,-2vh,0) scale(1)}
+  100%{transform:translate3d(9vw,11vh,0) scale(1.18)}
+}
+@keyframes fluid-drift-b{
+  0%{transform:translate3d(4vw,-4vh,0) scale(1.06)}
+  100%{transform:translate3d(-10vw,9vh,0) scale(1.22)}
+}
+@keyframes fluid-drift-c{
+  0%{transform:translate3d(-5vw,5vh,0) scale(.96)}
+  100%{transform:translate3d(8vw,-8vh,0) scale(1.16)}
+}
+@keyframes fluid-drift-d{
+  0%{transform:translate3d(2vw,6vh,0) scale(1)}
+  100%{transform:translate3d(-7vw,-10vh,0) scale(1.2)}
+}
 .home-track{
   position:relative;
   height:100%;
   will-change:transform;
+  z-index:1;
 }
 .home-screen{
   position:relative;
@@ -352,6 +437,11 @@ textarea{min-height:140px;resize:vertical}
     --line:rgba(255,255,255,.1);
     --accent:#f3efe7;
     --accent-text:#111318;
+    --fluid-a: rgba(86,126,255,.26);
+    --fluid-b: rgba(255,112,168,.22);
+    --fluid-c: rgba(92,218,190,.18);
+    --fluid-d: rgba(255,185,92,.14);
+    --fluid-glow: rgba(255,255,255,.08);
   }
   .admin-pane,.login-panel,.modal-panel{background:rgba(23,26,33,.78);box-shadow:0 24px 60px rgba(0,0,0,.22)}
   input,textarea,select,.icon-btn{background:rgba(28,32,40,.9)}
@@ -394,6 +484,12 @@ function home(posts: Post[]) {
   return shell(
     "juren233.top",
     `<main class="paged-home" aria-label="homepage pages">
+      <div class="fluid-bg" aria-hidden="true">
+        <span class="fluid-blob fluid-blob-a"></span>
+        <span class="fluid-blob fluid-blob-b"></span>
+        <span class="fluid-blob fluid-blob-c"></span>
+        <span class="fluid-blob fluid-blob-d"></span>
+      </div>
       <div class="home-track">
         <section class="home-screen brand-screen" aria-labelledby="brand-title" data-page-index="0">
           <div class="home-inner">
