@@ -459,11 +459,11 @@ function home(posts: Post[]) {
         let active=false;
         closingChars.forEach((char,index)=>{
           const state=closingStates[index];
-          state.velocityScale+=(state.targetScale-state.scale)*.16;
-          state.velocityScale*=.72;
+          state.velocityScale+=(state.targetScale-state.scale)*.11;
+          state.velocityScale*=.78;
           state.scale+=state.velocityScale;
-          state.velocitySpace+=(state.targetSpace-state.space)*.18;
-          state.velocitySpace*=.7;
+          state.velocitySpace+=(state.targetSpace-state.space)*.12;
+          state.velocitySpace*=.76;
           state.space+=state.velocitySpace;
           if(Math.abs(state.targetScale-state.scale)>.001||Math.abs(state.velocityScale)>.001||Math.abs(state.targetSpace-state.space)>.02||Math.abs(state.velocitySpace)>.02){
             active=true;
@@ -503,7 +503,7 @@ function home(posts: Post[]) {
           const distance=Math.hypot(centerX-clientX,centerY-clientY);
           const influence=Math.max(0,1-distance/radius);
           const scale=1+Math.pow(influence,1.85)*1.45;
-          const spacing=Math.max(0,(scale-1)*28+Math.pow(influence,1.2)*12);
+          const spacing=Math.max(0,(scale-1)*34+Math.pow(influence,1.15)*16);
           const state=closingStates[index];
           state.targetScale=scale;
           state.targetSpace=spacing;
