@@ -584,8 +584,9 @@ function home(posts: Post[]) {
           py:0,
           vx:0,
           vy:0,
-          width:.8+Math.random()*2.6,
-          life:180+Math.random()*260,
+          radius:12+Math.random()*34,
+          stretch:.86+Math.random()*.5,
+          life:220+Math.random()*320,
           sourceIndex:index%Math.max(sources.length,1),
           wobble:Math.random()*Math.PI*2,
         });
@@ -598,7 +599,7 @@ function home(posts: Post[]) {
           ctx.setTransform(dpr,0,0,dpr,0,0);
           const palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d"),styleOf("--fluid-glow")];
           sources=Array.from({length:6},(_,index)=>makeSource(index,palette));
-          particles=Array.from({length:320},(_,index)=>makeParticle(index));
+          particles=Array.from({length:180},(_,index)=>makeParticle(index));
         };
         const reseedParticle=(particle,spreadOnly=false)=>{
           const source=sources[particle.sourceIndex%sources.length];
@@ -612,9 +613,32 @@ function home(posts: Post[]) {
           particle.vx=0;
           particle.vy=0;
           if(!spreadOnly){
-            particle.life=180+Math.random()*260;
+            particle.life=220+Math.random()*320;
             particle.sourceIndex=(particle.sourceIndex+1+Math.floor(Math.random()*2))%sources.length;
           }
+        };
+        const drawParticleMass=(particle,source,time,index)=>{
+          const speed=Math.hypot(particle.vx,particle.vy);
+          const angle=Math.atan2(particle.vy,particle.vx||0.0001);
+          const radius=particle.radius*(1+Math.min(speed*.16,.6));
+          const stretch=particle.stretch+Math.min(speed*.08,.46);
+          const gradient=ctx.createRadialGradient(particle.x,particle.y,0,particle.x,particle.y,radius*1.8);
+          gradient.addColorStop(0,tint(source.color,.09));
+          gradient.addColorStop(.38,tint(source.color,.055));
+          gradient.addColorStop(.72,tint(source.color,.024));
+          gradient.addColorStop(1,"rgba(0,0,0,0)");
+          ctx.fillStyle=gradient;
+          ctx.beginPath();
+          ctx.ellipse(
+            particle.x,
+            particle.y,
+            radius*stretch,
+            radius*(2-stretch)*.94,
+            angle+.18*Math.sin(time*.00022+index),
+            0,
+            Math.PI*2
+          );
+          ctx.fill();
         };
         const frameFluid=(time)=>{
           fluidFrame=requestAnimationFrame(frameFluid);
@@ -639,36 +663,17 @@ function home(posts: Post[]) {
             const angle=flowAngle(particle.x,particle.y,time+particle.wobble*1200);
             const dragX=(source.x-particle.x)*.0011;
             const dragY=(source.y-particle.y)*.0011;
-            const curlX=Math.cos(angle)*1.26+Math.sin(time*.00014+particle.wobble)*.18;
-            const curlY=Math.sin(angle)*1.14+Math.cos(time*.00012+particle.wobble)*.16;
-            particle.vx=(particle.vx+curlX+dragX)*.93;
-            particle.vy=(particle.vy+curlY+dragY)*.93;
-            particle.x+=prefersReducedMotion.matches?dragX*18+curlX*.35:particle.vx;
-            particle.y+=prefersReducedMotion.matches?dragY*18+curlY*.35:particle.vy;
+            const curlX=Math.cos(angle)*.84+Math.sin(time*.00014+particle.wobble)*.12;
+            const curlY=Math.sin(angle)*.76+Math.cos(time*.00012+particle.wobble)*.1;
+            particle.vx=(particle.vx+curlX+dragX)*.945;
+            particle.vy=(particle.vy+curlY+dragY)*.945;
+            particle.x+=prefersReducedMotion.matches?dragX*18+curlX*.28:particle.vx;
+            particle.y+=prefersReducedMotion.matches?dragY*18+curlY*.28:particle.vy;
             particle.life-=1;
             if(particle.x<-160||particle.x>width+160||particle.y<-160||particle.y>height+160||particle.life<=0){
               reseedParticle(particle);
             }
-            ctx.strokeStyle=tint(source.color,.042);
-            ctx.lineWidth=particle.width;
-            ctx.beginPath();
-            ctx.moveTo(particle.px,particle.py);
-            ctx.quadraticCurveTo(
-              (particle.px+particle.x)/2+Math.sin(particle.wobble+time*.00015)*12,
-              (particle.py+particle.y)/2+Math.cos(particle.wobble+time*.00012)*12,
-              particle.x,
-              particle.y
-            );
-            ctx.stroke();
-            if(index%22===0){
-              const halo=ctx.createRadialGradient(particle.x,particle.y,0,particle.x,particle.y,particle.width*16);
-              halo.addColorStop(0,tint(source.color,.05));
-              halo.addColorStop(1,"rgba(0,0,0,0)");
-              ctx.fillStyle=halo;
-              ctx.beginPath();
-              ctx.arc(particle.x,particle.y,particle.width*14,0,Math.PI*2);
-              ctx.fill();
-            }
+            drawParticleMass(particle,source,time,index);
           });
         };
         resizeFluid();
