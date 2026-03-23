@@ -309,10 +309,11 @@ textarea{min-height:140px;resize:vertical}
 }
 .closing-char{
   display:inline-block;
+  padding-inline:var(--char-space,0px);
   transform:scale(var(--char-scale,1));
   transform-origin:center 72%;
-  transition:transform 160ms cubic-bezier(.22,1,.36,1);
-  will-change:transform;
+  transition:transform 160ms cubic-bezier(.22,1,.36,1),padding 160ms cubic-bezier(.22,1,.36,1);
+  will-change:transform,padding;
 }
 .brand-screen{background:linear-gradient(180deg,transparent,rgba(17,19,24,.03))}
 .entry-screen{background:linear-gradient(180deg,rgba(17,19,24,.02),transparent 34%,rgba(17,19,24,.03))}
@@ -454,7 +455,10 @@ function home(posts: Post[]) {
       const easeInOutCubic=(t)=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
       const clampIndex=(value)=>Math.max(0,Math.min(screens.length-1,value));
       const resetClosingChars=()=>{
-        closingChars.forEach((char)=>char.style.setProperty("--char-scale","1"));
+        closingChars.forEach((char)=>{
+          char.style.setProperty("--char-scale","1");
+          char.style.setProperty("--char-space","0px");
+        });
       };
       const updateClosingChars=(clientX,clientY)=>{
         if(!closingChars.length)return;
@@ -466,7 +470,9 @@ function home(posts: Post[]) {
           const distance=Math.hypot(centerX-clientX,centerY-clientY);
           const influence=Math.max(0,1-distance/radius);
           const scale=1+Math.pow(influence,1.85)*1.45;
+          const spacing=Math.pow(influence,1.45)*18;
           char.style.setProperty("--char-scale",scale.toFixed(3));
+          char.style.setProperty("--char-space",spacing.toFixed(2)+"px");
         });
       };
       const paintOffset=(offsetY)=>{
