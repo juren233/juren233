@@ -57,6 +57,20 @@ body{
   user-select:none;
   -webkit-user-select:none;
 }
+.admin-body{
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  user-select:text;
+  -webkit-user-select:text;
+}
+.login-body{
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  user-select:text;
+  -webkit-user-select:text;
+}
 a{text-decoration:none;color:inherit}
 button,input,textarea,select{font:inherit}
 button{appearance:none;background:none}
@@ -186,6 +200,12 @@ textarea{min-height:140px;resize:vertical}
   border:1px solid var(--line);
 }
 .admin-page,.login-page{min-height:100svh}
+.admin-page{
+  width:min(100%,calc(var(--content) + 120px));
+  display:grid;
+  gap:20px;
+  padding-top:28px;
+}
 .admin-top,.login-shell{
   display:flex;
   justify-content:space-between;
@@ -195,8 +215,34 @@ textarea{min-height:140px;resize:vertical}
   padding:24px var(--gutter) 34px;
 }
 .toolbar form{display:block}
-.workspace{display:grid;grid-template-columns:minmax(320px,.92fr) minmax(0,1.08fr);gap:20px}
+.workspace{display:grid;grid-template-columns:minmax(320px,.92fr) minmax(0,1.08fr);gap:20px;align-items:start}
 .stack,.list{display:grid;gap:18px}
+.admin-summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin-bottom:6px;
+}
+.metric{
+  padding:18px 20px;
+  border-radius:20px;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.56));
+  box-shadow:0 12px 30px rgba(15,20,30,.05);
+}
+.metric strong{
+  display:block;
+  margin-top:10px;
+  font-size:clamp(1.8rem,3vw,2.6rem);
+  line-height:.9;
+  letter-spacing:-.05em;
+}
+.metric span{
+  display:block;
+  margin-top:6px;
+  color:var(--muted);
+  font-size:14px;
+}
 .admin-pane h2,.login-panel h2,.modal-panel h2{
   font-family:"Segoe UI Variable Display","Segoe UI","PingFang SC","Microsoft YaHei UI",sans-serif;
   letter-spacing:-.04em;
@@ -207,6 +253,57 @@ textarea{min-height:140px;resize:vertical}
 .mini{padding:18px 0;border-top:1px solid var(--line)}
 .mini:first-child{padding-top:0;border-top:0}
 .mini p{margin:0 0 10px}
+.record-card{
+  border:1px solid var(--line);
+  border-radius:22px;
+  background:rgba(255,255,255,.5);
+  overflow:hidden;
+}
+.record-card + .record-card{margin-top:12px}
+.record-summary{
+  list-style:none;
+  display:grid;
+  gap:14px;
+  padding:18px 20px;
+  cursor:pointer;
+}
+.record-summary::-webkit-details-marker{display:none}
+.record-summary-head,.record-summary-meta,.record-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.record-summary h3,.record-card h3{
+  margin:0;
+  font-size:1.1rem;
+  line-height:1.2;
+}
+.record-summary p,.record-card p{margin:0;color:var(--muted)}
+.record-summary .meta{gap:8px}
+.record-actions{
+  justify-content:flex-start;
+  color:var(--muted);
+  font-size:13px;
+}
+.record-body{
+  display:grid;
+  gap:18px;
+  padding:0 20px 20px;
+}
+.record-body > p{margin:0}
+.record-toolbar{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.post-form{
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
+.admin-pane .list{gap:12px}
 .check{width:20px;height:20px}
 .login-panel{width:min(100%,520px);margin:0 var(--gutter)}
 .paged-home{
@@ -416,18 +513,21 @@ textarea{min-height:140px;resize:vertical}
     opacity:.5;
   }
   .admin-pane,.login-panel,.modal-panel{background:rgba(23,26,33,.78);box-shadow:0 24px 60px rgba(0,0,0,.22)}
+  .metric,.record-card{background:rgba(255,255,255,.04)}
   input,textarea,select,.icon-btn{background:rgba(28,32,40,.9)}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
 @media (max-width:980px){
+  .admin-summary{grid-template-columns:1fr}
   .workspace{grid-template-columns:1fr}
   .home-screen{align-items:center}
   .entry-line,.update-line{display:grid;justify-content:stretch}
 }
 @media (max-width:720px){
   .page{padding-left:18px;padding-right:18px}
+  .admin-page{width:100%;padding-top:18px}
   .home-screen{padding-left:18px;padding-right:18px}
   .split{grid-template-columns:1fr}
   .login-panel{margin:0 18px}
@@ -440,7 +540,7 @@ textarea{min-height:140px;resize:vertical}
 const esc = (v:string) => v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 const slugify = (v:string) => v.trim().toLowerCase().replace(/[^a-z0-9一-龥\s-]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"") || `post-${Math.random().toString(36).slice(2,8)}`;
 const tags = (v:string|string[]) => (Array.isArray(v)?v:v.split(",")).map((x)=>x.trim()).filter(Boolean).slice(0,6);
-const shell = (title:string, body:string) => `<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>${esc(title)}</title><meta name="description" content="juren233.top 的主域名入口与联络通道。"/><style>${css}</style></head><body>${body}</body></html>`;
+const shell = (title:string, body:string, bodyClass = "") => `<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>${esc(title)}</title><meta name="description" content="juren233.top 的主域名入口与联络通道。"/><style>${css}</style></head><body${bodyClass ? ` class="${bodyClass}"` : ""}>${body}</body></html>`;
 
 function home(posts: Post[]) {
   const lead = (posts.length ? posts : fallbackPosts)[0];
@@ -943,13 +1043,16 @@ function home(posts: Post[]) {
 }
 
 function login(error?: string) {
-  return shell("Admin Login", `<main class="page login-page"><header class="login-shell"><div><div class="mark">Admin access</div><div class="smallcaps">juren233 / backstage</div></div><a class="ghost-link" href="/">返回主站</a></header><section class="login-panel"><div class="eyebrow">Private editing entry</div><h2>后台登录</h2><p class="mark" style="letter-spacing:.08em;text-transform:none;">Cloudflare Access 可直接放行；本地预览时使用管理员令牌。</p>${error?`<div class="msg err">${esc(error)}</div>`:""}<form method="post" action="/admin/login"><label>管理员令牌<input type="password" name="token" placeholder="输入 ADMIN_TOKEN"/></label><button class="btn btn-primary" type="submit">进入后台</button></form></section></main>`);
+  return shell("Admin Login", `<main class="page login-page"><header class="login-shell"><div><div class="mark">Admin access</div><div class="smallcaps">juren233 / backstage</div></div><a class="ghost-link" href="/">返回主站</a></header><section class="login-panel"><div class="eyebrow">Private editing entry</div><h2>后台登录</h2><p class="mark" style="letter-spacing:.08em;text-transform:none;">Cloudflare Access 可直接放行；本地预览时使用管理员令牌。</p>${error?`<div class="msg err">${esc(error)}</div>`:""}<form method="post" action="/admin/login"><label>管理员令牌<input type="password" name="token" placeholder="输入 ADMIN_TOKEN"/></label><button class="btn btn-primary" type="submit">进入后台</button></form></section></main>`, "login-body");
 }
 
 function admin(posts: Post[], apps: Application[], flash?: string) {
-  const postCards = posts.map((p)=>`<article class="mini"><div class="meta"><span class="pill">${esc(p.status)}</span>${p.pinned?'<span class="pill">Pinned</span>':''}<span>${new Date(p.createdAt).toLocaleDateString("zh-CN")}</span></div><h3>${esc(p.title||"未命名动态")}</h3><p>${esc(p.body)}</p><form method="post" action="/admin/posts"><input type="hidden" name="id" value="${esc(p.id)}"/><label>标题<input name="title" value="${esc(p.title)}"/></label><label>Slug<input name="slug" value="${esc(p.slug)}"/></label><label>标签<input name="tags" value="${esc(p.tags.join(", "))}"/></label><label>正文<textarea name="body">${esc(p.body)}</textarea></label><div class="split"><label>状态<select name="status"><option value="draft" ${p.status==="draft"?"selected":""}>draft</option><option value="published" ${p.status==="published"?"selected":""}>published</option></select></label><label>置顶<input class="check" type="checkbox" name="pinned" ${p.pinned?"checked":""}/></label></div><button class="btn btn-primary" type="submit">保存动态</button></form><form method="post" action="/admin/posts/${esc(p.id)}/delete"><button class="btn btn-secondary" type="submit">删除</button></form></article>`).join("");
-  const appCards = apps.map((a)=>`<article class="mini"><div class="meta"><span class="pill">${esc(a.status)}</span><span>${new Date(a.createdAt).toLocaleDateString("zh-CN")}</span></div><h3>${esc(a.name)}</h3><p><strong>联系：</strong>${esc(a.contact)}</p><p><strong>用途：</strong>${esc(a.requestedSubdomain||"未填写")}</p><p>${esc(a.projectSummary)}</p>${a.notes?`<p><strong>备注：</strong>${esc(a.notes)}</p>`:""}<form class="inline" method="post" action="/admin/applications/${esc(a.id)}/status"><select name="status">${["new","reviewing","accepted","rejected"].map((s)=>`<option value="${s}" ${a.status===s?"selected":""}>${s}</option>`).join("")}</select><button class="btn btn-primary" type="submit">更新状态</button></form></article>`).join("");
-  return shell("Admin Dashboard", `<main class="page admin-page"><header class="admin-top"><div><div class="mark">Editing workspace</div><div class="smallcaps">juren233.top / admin</div></div><nav class="toolbar"><a href="/">返回主站</a><form method="post" action="/admin/logout"><button class="ghost-link" type="submit">退出</button></form></nav></header>${flash?`<div class="msg ok">${esc(flash)}</div>`:""}<section class="workspace"><div class="stack"><article class="admin-pane"><div class="eyebrow">Publish short updates</div><h2>发布新动态</h2><p class="mark" style="letter-spacing:.08em;text-transform:none;">集中维护上线记录、站点更新和阶段性判断。</p><form method="post" action="/admin/posts"><label>标题<input name="title" placeholder="可选标题，比如上线记录"/></label><label>Slug<input name="slug" placeholder="可留空，系统会自动生成"/></label><label>标签<input name="tags" placeholder="用逗号分隔，例如 brand, 上线, 公告"/></label><label>正文<textarea name="body" placeholder="写下近况、更新、想法或上线播报" required></textarea></label><div class="split"><label>状态<select name="status"><option value="draft">draft</option><option value="published">published</option></select></label><label>置顶显示<input class="check" type="checkbox" name="pinned"/></label></div><button class="btn btn-primary" type="submit">保存动态</button></form></article><article class="admin-pane"><div class="eyebrow">Inbox</div><h2>合作申请</h2><div class="list">${appCards||'<p class="mark" style="letter-spacing:.08em;text-transform:none;">目前还没有新的合作申请。</p>'}</div></article></div><article class="admin-pane"><div class="eyebrow">Existing posts</div><h2>已发布与草稿动态</h2><div class="list">${postCards||'<p class="mark" style="letter-spacing:.08em;text-transform:none;">目前还没有动态记录。</p>'}</div></article></section></main>`);
+  const pendingApps = apps.filter((a)=>a.status==="new").length;
+  const publishedPosts = posts.filter((p)=>p.status==="published").length;
+  const draftPosts = posts.filter((p)=>p.status==="draft").length;
+  const postCards = posts.map((p, index)=>`<details class="record-card" ${index===0 ? "open" : ""}><summary class="record-summary"><div class="record-summary-head"><div><div class="meta"><span class="pill">${esc(p.status)}</span>${p.pinned?'<span class="pill">Pinned</span>':""}<span>${new Date(p.updatedAt).toLocaleDateString("zh-CN")}</span></div><h3>${esc(p.title||"未命名动态")}</h3></div><div class="record-actions"><span>继续编辑</span><span>Slug: ${esc(p.slug)}</span></div></div><p>${esc(p.body.slice(0, 96))}${p.body.length>96?"...":""}</p></summary><div class="record-body"><div class="record-toolbar"><span class="pill">标签 ${p.tags.length}</span>${p.tags.map((tag)=>`<span class="tag">${esc(tag)}</span>`).join("")}</div><form class="post-form" method="post" action="/admin/posts"><input type="hidden" name="id" value="${esc(p.id)}"/><label>标题<input name="title" value="${esc(p.title)}"/></label><label>Slug<input name="slug" value="${esc(p.slug)}"/></label><label>标签<input name="tags" value="${esc(p.tags.join(", "))}"/></label><label>正文<textarea name="body">${esc(p.body)}</textarea></label><div class="split"><label>状态<select name="status"><option value="draft" ${p.status==="draft"?"selected":""}>draft</option><option value="published" ${p.status==="published"?"selected":""}>published</option></select></label><label>置顶<input class="check" type="checkbox" name="pinned" ${p.pinned?"checked":""}/></label></div><button class="btn btn-primary" type="submit">保存动态</button></form><form method="post" action="/admin/posts/${esc(p.id)}/delete"><button class="btn btn-secondary" type="submit">删除</button></form></div></details>`).join("");
+  const appCards = apps.map((a)=>`<article class="record-card"><div class="record-body"><div class="record-summary-meta"><div class="meta"><span class="pill">${esc(a.status)}</span><span>${new Date(a.createdAt).toLocaleDateString("zh-CN")}</span></div><span class="smallcaps">${esc(a.requestedSubdomain||"未填写用途")}</span></div><h3>${esc(a.name)}</h3><p>${esc(a.projectSummary)}</p><div class="record-toolbar"><span><strong>联系：</strong>${esc(a.contact)}</span>${a.notes?`<span><strong>备注：</strong>${esc(a.notes)}</span>`:""}</div><form class="inline" method="post" action="/admin/applications/${esc(a.id)}/status"><select name="status">${["new","reviewing","accepted","rejected"].map((s)=>`<option value="${s}" ${a.status===s?"selected":""}>${s}</option>`).join("")}</select><button class="btn btn-primary" type="submit">更新状态</button></form></div></article>`).join("");
+  return shell("Admin Dashboard", `<main class="page admin-page">${flash?`<div class="msg ok">${esc(flash)}</div>`:""}<section class="admin-summary"><article class="metric"><div class="mark">待处理申请</div><strong>${pendingApps}</strong><span>${apps.length ? `共 ${apps.length} 条合作申请` : "当前收件箱为空"}</span></article><article class="metric"><div class="mark">已发布</div><strong>${publishedPosts}</strong><span>当前对外可见的动态数量</span></article><article class="metric"><div class="mark">草稿</div><strong>${draftPosts}</strong><span>还可以继续整理后再发布</span></article></section><section class="workspace"><div class="stack"><article class="admin-pane"><div class="eyebrow">Publish short updates</div><h2>发布新动态</h2><p class="mark" style="letter-spacing:.08em;text-transform:none;">集中维护上线记录、站点更新和阶段性判断。</p><form method="post" action="/admin/posts"><label>标题<input name="title" placeholder="可选标题，比如上线记录"/></label><label>Slug<input name="slug" placeholder="可留空，系统会自动生成"/></label><label>标签<input name="tags" placeholder="用逗号分隔，例如 brand, 上线, 公告"/></label><label>正文<textarea name="body" placeholder="写下近况、更新、想法或上线播报" required></textarea></label><div class="split"><label>状态<select name="status"><option value="draft">draft</option><option value="published">published</option></select></label><label>置顶显示<input class="check" type="checkbox" name="pinned"/></label></div><button class="btn btn-primary" type="submit">保存动态</button></form></article><article class="admin-pane"><div class="eyebrow">Inbox</div><h2>合作申请</h2><div class="list">${appCards||'<p class="mark" style="letter-spacing:.08em;text-transform:none;">目前还没有新的合作申请。</p>'}</div></article></div><article class="admin-pane"><div class="eyebrow">Existing posts</div><h2>已发布与草稿动态</h2><div class="list">${postCards||'<p class="mark" style="letter-spacing:.08em;text-transform:none;">目前还没有动态记录。</p>'}</div></article></section></main>`, "admin-body");
 }
 
 export function sortPublishedPosts(posts: Post[]): Post[] { return posts.filter((p)=>p.status==="published").sort((a,b)=>pinnedOrder(a,b) || new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()); }

@@ -160,5 +160,90 @@ describe("createApp", () => {
     const feedJson = (await feed.json()) as { items: unknown[] };
     expect(feedJson.items).toHaveLength(2);
   });
+
+  it("renders a scrollable admin dashboard with quick stats and collapsible post editors", async () => {
+    const app = createApp({
+      listPosts: async () => [
+        {
+          id: "post-1",
+          title: "置顶动态",
+          body: "这是一条需要被编辑和管理的后台动态。",
+          tags: ["brand", "update"],
+          slug: "post-1",
+          status: "published",
+          pinned: true,
+          createdAt: "2026-03-22T08:00:00.000Z",
+          updatedAt: "2026-03-22T08:00:00.000Z",
+        },
+        {
+          id: "post-2",
+          title: "草稿动态",
+          body: "这是一条草稿动态。",
+          tags: ["draft"],
+          slug: "post-2",
+          status: "draft",
+          pinned: false,
+          createdAt: "2026-03-21T08:00:00.000Z",
+          updatedAt: "2026-03-21T08:00:00.000Z",
+        },
+      ],
+      listApplications: async () => [
+        {
+          id: "app-1",
+          name: "申请人 A",
+          contact: "a@example.com",
+          projectSummary: "希望挂载一个展示页。",
+          requestedSubdomain: "demo-a",
+          notes: "希望本周内处理",
+          status: "new",
+          createdAt: "2026-03-22T08:00:00.000Z",
+          updatedAt: "2026-03-22T08:00:00.000Z",
+        },
+        {
+          id: "app-2",
+          name: "申请人 B",
+          contact: "b@example.com",
+          projectSummary: "已有上线内容，希望补一个下载入口。",
+          requestedSubdomain: "share-b",
+          notes: "",
+          status: "reviewing",
+          createdAt: "2026-03-21T08:00:00.000Z",
+          updatedAt: "2026-03-21T08:00:00.000Z",
+        },
+      ],
+      createApplication: async () => undefined,
+      upsertPost: async () => undefined,
+      deletePost: async () => undefined,
+      updateApplicationStatus: async () => undefined,
+    });
+
+    const admin = await app.request(
+      new Request("https://example.com/admin", {
+        headers: {
+          "CF-Access-Authenticated-User-Email": "owner@juren233.top",
+        },
+      }),
+      {},
+      {
+        ADMIN_EMAIL: "owner@juren233.top",
+        ADMIN_TOKEN: "secret",
+      },
+    );
+    const html = await admin.text();
+
+    expect(admin.status).toBe(200);
+    expect(html).toContain('class="admin-body"');
+    expect(html).toContain(".admin-body{");
+    expect(html).toContain("overflow-y:auto");
+    expect(html).not.toContain('class="admin-top"');
+    expect(html).not.toContain("后台工作台");
+    expect(html).not.toContain("返回主站");
+    expect(html).not.toContain("退出");
+    expect(html).toContain("待处理申请");
+    expect(html).toContain("已发布");
+    expect(html).toContain("草稿");
+    expect(html).toContain('<details class="record-card"');
+    expect(html).toContain("继续编辑");
+  });
 });
 
