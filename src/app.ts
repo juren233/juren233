@@ -247,59 +247,16 @@ textarea{min-height:140px;resize:vertical}
   overflow:hidden;
   filter:saturate(114%);
 }
-.fluid-canvas{
-  width:100%;
-  height:100%;
+.fluid-canvas-el{
+  position:absolute;
+  inset:-10%;
+  width:120%;
+  height:120%;
   display:block;
-}
-.liquid-field{
-  filter:url(#liquid-warp);
-  transform-origin:center;
-  animation:liquid-field-drift 22s ease-in-out infinite alternate;
-}
-.liquid-mass{
-  transform-box:fill-box;
-  transform-origin:center;
-  mix-blend-mode:screen;
-}
-.liquid-mass-a{animation:liquid-mass-a 24s ease-in-out infinite alternate}
-.liquid-mass-b{animation:liquid-mass-b 29s ease-in-out infinite alternate}
-.liquid-mass-c{animation:liquid-mass-c 26s ease-in-out infinite alternate}
-.liquid-mass-d{animation:liquid-mass-d 31s ease-in-out infinite alternate}
-.liquid-mass-e{animation:liquid-mass-e 28s ease-in-out infinite alternate}
-.liquid-vein{
-  opacity:.46;
-  mix-blend-mode:screen;
-  filter:url(#liquid-soften);
-  animation:liquid-vein-drift 34s ease-in-out infinite alternate;
-}
-@keyframes liquid-field-drift{
-  0%{transform:translate3d(-2%,1%,0) scale(1)}
-  100%{transform:translate3d(3%,-2%,0) scale(1.04)}
-}
-@keyframes liquid-mass-a{
-  0%{transform:translate(-4%,1%) scale(1,.96) rotate(-6deg)}
-  100%{transform:translate(7%,6%) scale(1.14,1.08) rotate(12deg)}
-}
-@keyframes liquid-mass-b{
-  0%{transform:translate(3%,-5%) scale(1.05,.92) rotate(4deg)}
-  100%{transform:translate(-8%,7%) scale(.9,1.18) rotate(-10deg)}
-}
-@keyframes liquid-mass-c{
-  0%{transform:translate(-6%,6%) scale(.96,1.06) rotate(-8deg)}
-  100%{transform:translate(5%,-7%) scale(1.18,.9) rotate(9deg)}
-}
-@keyframes liquid-mass-d{
-  0%{transform:translate(2%,4%) scale(1.02,.94) rotate(-4deg)}
-  100%{transform:translate(-7%,-6%) scale(1.12,1.1) rotate(7deg)}
-}
-@keyframes liquid-mass-e{
-  0%{transform:translate(0,-3%) scale(.92,1.08) rotate(6deg)}
-  100%{transform:translate(4%,8%) scale(1.2,.88) rotate(-7deg)}
-}
-@keyframes liquid-vein-drift{
-  0%{transform:translate(-2%,2%) scale(1)}
-  100%{transform:translate(2%,-2%) scale(1.06)}
+  opacity:.94;
+  filter:blur(12px) saturate(118%) contrast(108%);
+  transform:translate3d(0,0,0);
+  will-change:transform;
 }
 .home-track{
   position:relative;
@@ -491,51 +448,7 @@ function home(posts: Post[]) {
     "juren233.top",
     `<main class="paged-home" aria-label="homepage pages">
       <div class="fluid-bg" aria-hidden="true">
-        <svg class="fluid-canvas" viewBox="0 0 1600 1200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <defs>
-            <filter id="liquid-warp" x="-25%" y="-25%" width="150%" height="150%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.004 0.009" numOctaves="3" seed="8" result="noise">
-                <animate attributeName="baseFrequency" dur="28s" values="0.004 0.009;0.007 0.012;0.005 0.008;0.004 0.009" repeatCount="indefinite"/>
-              </feTurbulence>
-              <feDisplacementMap in="SourceGraphic" in2="noise" scale="110" xChannelSelector="R" yChannelSelector="B"/>
-              <feGaussianBlur stdDeviation="18"/>
-            </filter>
-            <filter id="liquid-soften" x="-25%" y="-25%" width="150%" height="150%">
-              <feGaussianBlur stdDeviation="32"/>
-            </filter>
-            <radialGradient id="liquid-a" cx="36%" cy="34%" r="72%">
-              <stop offset="0%" stop-color="var(--fluid-a)"/>
-              <stop offset="100%" stop-color="transparent"/>
-            </radialGradient>
-            <radialGradient id="liquid-b" cx="58%" cy="42%" r="74%">
-              <stop offset="0%" stop-color="var(--fluid-b)"/>
-              <stop offset="100%" stop-color="transparent"/>
-            </radialGradient>
-            <radialGradient id="liquid-c" cx="42%" cy="56%" r="74%">
-              <stop offset="0%" stop-color="var(--fluid-c)"/>
-              <stop offset="100%" stop-color="transparent"/>
-            </radialGradient>
-            <radialGradient id="liquid-d" cx="54%" cy="48%" r="76%">
-              <stop offset="0%" stop-color="var(--fluid-d)"/>
-              <stop offset="100%" stop-color="transparent"/>
-            </radialGradient>
-            <radialGradient id="liquid-glow" cx="50%" cy="50%" r="70%">
-              <stop offset="0%" stop-color="var(--fluid-glow)"/>
-              <stop offset="100%" stop-color="transparent"/>
-            </radialGradient>
-          </defs>
-          <g class="liquid-field">
-            <ellipse class="liquid-mass liquid-mass-a" cx="320" cy="250" rx="380" ry="290" fill="url(#liquid-a)"/>
-            <ellipse class="liquid-mass liquid-mass-b" cx="1230" cy="350" rx="330" ry="270" fill="url(#liquid-b)"/>
-            <ellipse class="liquid-mass liquid-mass-c" cx="760" cy="930" rx="430" ry="300" fill="url(#liquid-c)"/>
-            <ellipse class="liquid-mass liquid-mass-d" cx="1160" cy="900" rx="290" ry="230" fill="url(#liquid-d)"/>
-            <ellipse class="liquid-mass liquid-mass-e" cx="690" cy="520" rx="520" ry="340" fill="url(#liquid-glow)"/>
-          </g>
-          <g class="liquid-vein">
-            <path d="M-40 420C180 250 360 330 540 470C720 610 890 660 1090 560C1280 460 1470 470 1660 650L1660 940C1420 790 1210 760 1030 840C830 930 610 930 420 820C250 720 90 710 -40 790Z" fill="url(#liquid-a)"/>
-            <path d="M-40 118C170 70 310 120 470 250C640 390 900 430 1110 310C1300 200 1490 190 1660 280L1660 -60H-40Z" fill="url(#liquid-b)"/>
-          </g>
-        </svg>
+        <canvas class="fluid-canvas-el"></canvas>
       </div>
       <div class="home-track">
         <section class="home-screen brand-screen" aria-labelledby="brand-title" data-page-index="0">
@@ -608,6 +521,7 @@ function home(posts: Post[]) {
       const homeScroller=document.querySelector(".paged-home");
       const homeTrack=document.querySelector(".home-track");
       const modal=document.getElementById("cooperation-modal");
+      const fluidCanvas=document.querySelector(".fluid-canvas-el");
       const openers=document.querySelectorAll('[data-open-modal="cooperation-modal"]');
       const closers=document.querySelectorAll("[data-close-modal]");
       const form=document.getElementById("cooperation-form");
@@ -623,8 +537,137 @@ function home(posts: Post[]) {
       let closingRevealTimer=0;
       let closingRevealStartTimer=0;
       const prefersReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
+      const prefersDark=window.matchMedia("(prefers-color-scheme: dark)");
       const easeInOutCubic=(t)=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
       const clampIndex=(value)=>Math.max(0,Math.min(screens.length-1,value));
+      const initFluid=()=>{
+        if(!(fluidCanvas instanceof HTMLCanvasElement))return;
+        const ctx=fluidCanvas.getContext("2d");
+        if(!ctx)return;
+        let width=1;
+        let height=1;
+        let dpr=1;
+        let fluidFrame=0;
+        let masses=[];
+        let trails=[];
+        const styleOf=(name)=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        const tint=(value,alpha)=>{
+          if(value.startsWith("rgba(")) return value.replace(/rgba\((.+),[^,]+\)$/,"rgba($1,"+alpha+")");
+          if(value.startsWith("rgb(")) return value.replace("rgb(","rgba(").replace(")",","+alpha+")");
+          return value;
+        };
+        const flowAngle=(x,y,time)=>{
+          const nx=x/width-.5;
+          const ny=y/height-.5;
+          const swirl=Math.atan2(ny,nx);
+          return Math.sin(ny*7.4+time*.00017)*1.35+Math.cos(nx*6.2-time*.00013)*1.08+swirl*.44;
+        };
+        const makeMass=(index,palette)=>({
+          x:width*(.18+index*.16),
+          y:height*(.26+(index%3)*.18),
+          vx:0,
+          vy:0,
+          radius:Math.min(width,height)*(.15+(index%2)*.03),
+          phase:index*1.31,
+          drift:.00012+index*.000018,
+          color:palette[index%palette.length],
+        });
+        const makeTrail=(index)=>({
+          x:width*(.16+Math.random()*.68),
+          y:height*(.18+Math.random()*.64),
+          px:0,
+          py:0,
+          width:1.3+Math.random()*3.8,
+          life:160+Math.random()*240,
+          massIndex:index%Math.max(masses.length,1),
+          wobble:Math.random()*Math.PI*2,
+        });
+        const resizeFluid=()=>{
+          dpr=Math.min(window.devicePixelRatio||1,1.5);
+          width=Math.max(window.innerWidth,1);
+          height=Math.max(window.innerHeight,1);
+          fluidCanvas.width=Math.round(width*dpr);
+          fluidCanvas.height=Math.round(height*dpr);
+          ctx.setTransform(dpr,0,0,dpr,0,0);
+          const palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d"),styleOf("--fluid-glow")];
+          masses=Array.from({length:5},(_,index)=>makeMass(index,palette));
+          trails=Array.from({length:180},(_,index)=>makeTrail(index));
+        };
+        const drawMass=(mass)=>{
+          const gradient=ctx.createRadialGradient(mass.x,mass.y,0,mass.x,mass.y,mass.radius*1.9);
+          gradient.addColorStop(0,tint(mass.color,.28));
+          gradient.addColorStop(.32,tint(mass.color,.18));
+          gradient.addColorStop(.7,tint(mass.color,.08));
+          gradient.addColorStop(1,"rgba(0,0,0,0)");
+          ctx.fillStyle=gradient;
+          ctx.beginPath();
+          ctx.ellipse(mass.x,mass.y,mass.radius*1.06,mass.radius*.8,Math.sin(mass.phase)*.8,0,Math.PI*2);
+          ctx.fill();
+        };
+        const frameFluid=(time)=>{
+          fluidFrame=requestAnimationFrame(frameFluid);
+          ctx.clearRect(0,0,width,height);
+          ctx.globalCompositeOperation="lighter";
+          masses.forEach((mass,index)=>{
+            const anchorX=width*(.5+.24*Math.cos(time*mass.drift+mass.phase)+.06*Math.sin(time*.0001+mass.phase*1.7));
+            const anchorY=height*(.5+.2*Math.sin(time*(mass.drift*.92)+mass.phase*.76)+.05*Math.cos(time*.00012+mass.phase*1.1));
+            const angle=flowAngle(mass.x,mass.y,time+index*240);
+            const pullX=(anchorX-mass.x)*.0018;
+            const pullY=(anchorY-mass.y)*.0018;
+            const streamX=Math.cos(angle)*.2;
+            const streamY=Math.sin(angle)*.17;
+            mass.vx=(mass.vx+pullX+streamX)*.974;
+            mass.vy=(mass.vy+pullY+streamY)*.974;
+            if(prefersReducedMotion.matches){
+              mass.x+=pullX*20;
+              mass.y+=pullY*20;
+            }else{
+              mass.x+=mass.vx;
+              mass.y+=mass.vy;
+            }
+            mass.phase+=.011;
+            drawMass(mass);
+          });
+          trails.forEach((trail,index)=>{
+            const mass=masses[trail.massIndex];
+            trail.px=trail.x;
+            trail.py=trail.y;
+            const angle=flowAngle(trail.x,trail.y,time+trail.wobble*800);
+            const dragX=(mass.x-trail.x)*.0026;
+            const dragY=(mass.y-trail.y)*.0026;
+            trail.x+=Math.cos(angle)*2.2+dragX+Math.sin(time*.00018+trail.wobble)*.26;
+            trail.y+=Math.sin(angle)*1.9+dragY+Math.cos(time*.00016+trail.wobble)*.24;
+            trail.life-=1;
+            if(trail.x<-140||trail.x>width+140||trail.y<-140||trail.y>height+140||trail.life<=0){
+              trail.massIndex=(trail.massIndex+1)%masses.length;
+              trail.x=masses[trail.massIndex].x+(Math.random()-.5)*110;
+              trail.y=masses[trail.massIndex].y+(Math.random()-.5)*110;
+              trail.px=trail.x;
+              trail.py=trail.y;
+              trail.life=160+Math.random()*240;
+            }
+            ctx.strokeStyle=tint(masses[trail.massIndex].color,.065);
+            ctx.lineWidth=trail.width;
+            ctx.beginPath();
+            ctx.moveTo(trail.px,trail.py);
+            ctx.quadraticCurveTo((trail.px+trail.x)/2+Math.sin(trail.wobble+time*.0002)*10,(trail.py+trail.y)/2+Math.cos(trail.wobble+time*.00018)*10,trail.x,trail.y);
+            ctx.stroke();
+            if(index%14===0){
+              const halo=ctx.createRadialGradient(trail.x,trail.y,0,trail.x,trail.y,trail.width*9);
+              halo.addColorStop(0,tint(masses[trail.massIndex].color,.08));
+              halo.addColorStop(1,"rgba(0,0,0,0)");
+              ctx.fillStyle=halo;
+              ctx.beginPath();
+              ctx.arc(trail.x,trail.y,trail.width*8,0,Math.PI*2);
+              ctx.fill();
+            }
+          });
+        };
+        resizeFluid();
+        frameFluid(performance.now());
+        window.addEventListener("resize",resizeFluid);
+        prefersDark.addEventListener?.("change",resizeFluid);
+      };
       const clearClosingReveal=(hide=true)=>{
         if(closingRevealStartTimer){
           clearTimeout(closingRevealStartTimer);
@@ -745,6 +788,7 @@ function home(posts: Post[]) {
         goToDelta(event.deltaY>0?1:-1);
       };
       syncPage();
+      initFluid();
       homeScroller?.addEventListener("wheel",onWheel,{passive:false});
       window.addEventListener("resize",()=>{
         syncPage();
