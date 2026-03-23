@@ -561,6 +561,7 @@ function home(posts: Post[]) {
         let fieldHeight=0;
         let fieldImage=null;
         let palette=[];
+        let anchors=[];
         let seed=Math.random()*1000;
         let bandOffsets=[0,0,0,0,0];
         let warpScaleX=1;
@@ -584,6 +585,11 @@ function home(posts: Post[]) {
             const j=Math.floor(Math.random()*(i+1));
             [palette[i],palette[j]]=[palette[j],palette[i]];
           }
+          anchors=Array.from({length:5},(_,index)=>({
+            x:.18+((index%3)*.28)+Math.random()*.12,
+            y:.18+(Math.floor(index/3)*.34)+Math.random()*.18,
+            radius:.28+Math.random()*.12,
+          }));
           seed=Math.random()*1000;
           bandOffsets=Array.from({length:5},()=>Math.random()*Math.PI*2+seed);
           warpScaleX=.86+Math.random()*.34;
@@ -601,6 +607,12 @@ function home(posts: Post[]) {
         const smoothstep=(edge0,edge1,value)=>{
           const t=Math.max(0,Math.min(1,(value-edge0)/(edge1-edge0||1)));
           return t*t*(3-2*t);
+        };
+        const radialMask=(nx,ny,anchor)=>{
+          const dx=nx-(anchor.x-.5);
+          const dy=ny-(anchor.y-.5);
+          const dist=Math.hypot(dx,dy);
+          return 1-smoothstep(anchor.radius*.42,anchor.radius,dist);
         };
         const mix=(a,b,t)=>a+(b-a)*t;
         const renderField=(time)=>{
@@ -622,7 +634,17 @@ function home(posts: Post[]) {
               const bandC=.5+.5*Math.sin(sx*5.4+sy*5.1+time*.00012*speedA+bandOffsets[2]);
               const bandD=.5+.5*Math.cos(sx*7.1-sy*2.7-time*.0001*speedB+bandOffsets[3]);
               const bandE=.5+.5*Math.sin(sx*3.8-sy*6.4+time*.00013*((speedA+speedB)*.5)+bandOffsets[4]);
-              const core=mix(bandA,bandB,.5)*.34 + bandC*.2 + bandD*.18 + bandE*.2;
+              const maskA=radialMask(nx,ny,anchors[0]);
+              const maskB=radialMask(nx,ny,anchors[1]);
+              const maskC=radialMask(nx,ny,anchors[2]);
+              const maskD=radialMask(nx,ny,anchors[3]);
+              const maskE=radialMask(nx,ny,anchors[4]);
+              const core=(mix(bandA,bandB,.5)*.18 + bandC*.14 + bandD*.12 + bandE*.14)
+                + maskA*bandA*.42
+                + maskB*bandB*.36
+                + maskC*bandC*.34
+                + maskD*bandD*.3
+                + maskE*bandE*.34;
               const envelope=1-Math.min(1,Math.hypot(nx*1.08,ny*.96));
               const density=core*envelope*1.6;
               const alpha=smoothstep(threshold,falloff,density);
@@ -631,11 +653,11 @@ function home(posts: Post[]) {
                 continue;
               }
               const edge=1-Math.pow(1-alpha,1.6);
-              const wa=.16+bandA*.34;
-              const wb=.12+bandB*.28;
-              const wc=.1+bandC*.24;
-              const wd=.08+bandD*.22;
-              const we=.1+bandE*.26;
+              const wa=.04+maskA*.44+bandA*.16;
+              const wb=.04+maskB*.38+bandB*.14;
+              const wc=.03+maskC*.34+bandC*.12;
+              const wd=.03+maskD*.3+bandD*.1;
+              const we=.03+maskE*.36+bandE*.12;
               const r=Math.min(255,palette[0][0]*wa*.8+palette[1][0]*wb*.72+palette[2][0]*wc*.66+palette[3][0]*wd*.58+palette[4][0]*we*.68);
               const g=Math.min(255,palette[0][1]*wa*.8+palette[1][1]*wb*.72+palette[2][1]*wc*.66+palette[3][1]*wd*.58+palette[4][1]*we*.68);
               const b=Math.min(255,palette[0][2]*wa*.8+palette[1][2]*wb*.72+palette[2][2]*wc*.66+palette[3][2]*wd*.58+palette[4][2]*we*.68);
