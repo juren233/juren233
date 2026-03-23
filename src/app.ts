@@ -514,7 +514,7 @@ function home(posts: Post[]) {
             closingRevealTimer=0;
           },totalDuration);
           closingRevealStartTimer=0;
-        },100);
+        },250);
       };
       const resetClosingChars=()=>{
         if(closingScreen instanceof HTMLElement)closingScreen.classList.remove("is-pointer-active");
@@ -526,7 +526,7 @@ function home(posts: Post[]) {
       const updateClosingChars=(clientX,clientY)=>{
         if(!closingChars.length)return;
         if(closingScreen instanceof HTMLElement)closingScreen.classList.add("is-pointer-active");
-        const radius=Math.max(window.innerWidth*.22,220);
+        const radius=Math.max(window.innerWidth*.14,140);
         closingChars.forEach((char,index)=>{
           const rect=char.getBoundingClientRect();
           const centerX=rect.left+rect.width/2;
