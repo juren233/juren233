@@ -134,6 +134,7 @@ describe("createApp", () => {
     expect(home.status).toBe(200);
     expect(html).toContain("juren233.top");
     expect(html).toContain("打开入口");
+    expect(html).toContain("留下一条消息");
     expect(html).toContain("cooperation-modal");
     expect(html).toContain("最新动态");
     expect(html).toContain("最新公告");
@@ -143,6 +144,8 @@ describe("createApp", () => {
     expect(html).not.toContain("apple green");
     expect(html).not.toContain("打开合作申请");
     expect(html).not.toContain("single update");
+    expect(html.indexOf("juren233.top")).toBeLessThan(html.indexOf("留下一条消息"));
+    expect(html.indexOf("留下一条消息")).toBeLessThan(html.indexOf("最新动态"));
 
     const feed = await app.request("/api/feed");
     const feedJson = (await feed.json()) as { items: unknown[] };
