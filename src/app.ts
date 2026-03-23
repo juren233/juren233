@@ -182,6 +182,11 @@ textarea{min-height:140px;resize:vertical}
   width:min(100%,760px);
   max-height:min(88vh,920px);
   overflow:auto;
+  background:rgba(255,255,255,.58);
+  border-color:rgba(255,255,255,.36);
+  box-shadow:0 28px 80px rgba(15,20,30,.16);
+  -webkit-backdrop-filter:blur(28px) saturate(132%);
+  backdrop-filter:blur(28px) saturate(132%);
 }
 .modal-head{
   display:flex;
@@ -514,6 +519,13 @@ textarea{min-height:140px;resize:vertical}
     filter:blur(28px) saturate(130%) contrast(104%);
   }
   .admin-pane,.login-panel,.modal-panel{background:rgba(23,26,33,.78);box-shadow:0 24px 60px rgba(0,0,0,.22)}
+  .modal-panel{
+    background:rgba(26,30,42,.5);
+    border-color:rgba(255,255,255,.12);
+    box-shadow:0 30px 90px rgba(0,0,0,.32);
+    -webkit-backdrop-filter:blur(30px) saturate(144%);
+    backdrop-filter:blur(30px) saturate(144%);
+  }
   .metric,.record-card{background:rgba(255,255,255,.04)}
   input,textarea,select,.icon-btn{background:rgba(28,32,40,.9)}
 }
