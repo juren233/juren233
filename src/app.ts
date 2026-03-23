@@ -48,10 +48,16 @@ body{
   background:var(--bg);
   min-height:100vh;
   overflow:hidden;
+  user-select:none;
+  -webkit-user-select:none;
 }
 a{text-decoration:none;color:inherit}
 button,input,textarea,select{font:inherit}
 button{appearance:none;background:none}
+input,textarea,select,[contenteditable="true"]{
+  user-select:text;
+  -webkit-user-select:text;
+}
 img,svg{display:block;max-width:100%}
 .page{
   width:min(100%,var(--content));
@@ -289,13 +295,24 @@ textarea{min-height:140px;resize:vertical}
 }
 .closing-brand{
   margin:0;
-  text-align:center;
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  flex-wrap:wrap;
+  gap:clamp(.02em,.18vw,.08em);
   font-family:"Segoe UI Variable Display","Segoe UI","PingFang SC","Microsoft YaHei UI",sans-serif;
   font-size:clamp(4rem,16vw,13rem);
   line-height:.78;
   letter-spacing:-.06em;
   font-stretch:74%;
   font-variation-settings:"wdth" 74;
+}
+.closing-char{
+  display:inline-block;
+  transform:scale(var(--char-scale,1));
+  transform-origin:center 72%;
+  transition:transform 160ms cubic-bezier(.22,1,.36,1);
+  will-change:transform;
 }
 .brand-screen{background:linear-gradient(180deg,transparent,rgba(17,19,24,.03))}
 .entry-screen{background:linear-gradient(180deg,rgba(17,19,24,.02),transparent 34%,rgba(17,19,24,.03))}
@@ -346,6 +363,8 @@ function home(posts: Post[]) {
   const lead = (posts.length ? posts : fallbackPosts)[0];
   const leadDate = new Date(lead.createdAt).toLocaleDateString("zh-CN");
   const leadHtml = `<div class="update-meta">${lead.pinned ? '<span class="pill">置顶</span>' : ""}<span class="smallcaps">${leadDate}</span>${lead.tags.map((t)=>`<span class="tag">${esc(t)}</span>`).join("")}</div><h3>${esc(lead.title || "未命名动态")}</h3><p>${esc(lead.body)}</p>`;
+  const closingText = "juren233.top";
+  const closingChars = Array.from(closingText).map((char, index)=>`<span class="closing-char" data-char-index="${index}" aria-hidden="true">${esc(char)}</span>`).join("");
   return shell(
     "juren233.top",
     `<main class="paged-home" aria-label="homepage pages">
@@ -387,7 +406,7 @@ function home(posts: Post[]) {
         </section>
         <section class="home-screen closing-screen" aria-label="closing brand page" data-page-index="3">
           <div class="home-inner">
-            <h2 class="closing-brand">juren233.top</h2>
+            <h2 class="closing-brand" aria-label="juren233.top">${closingChars}</h2>
           </div>
         </section>
       </div>
@@ -425,6 +444,8 @@ function home(posts: Post[]) {
       const form=document.getElementById("cooperation-form");
       const message=document.getElementById("form-message");
       const screens=homeTrack instanceof HTMLElement?Array.from(homeTrack.querySelectorAll(".home-screen")):[];
+      const closingScreen=homeTrack instanceof HTMLElement?homeTrack.querySelector(".closing-screen"):null;
+      const closingChars=closingScreen instanceof HTMLElement?Array.from(closingScreen.querySelectorAll(".closing-char")):[];
       let currentIndex=0;
       let currentOffset=0;
       let animationFrame=0;
@@ -432,6 +453,22 @@ function home(posts: Post[]) {
       const prefersReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
       const easeInOutCubic=(t)=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
       const clampIndex=(value)=>Math.max(0,Math.min(screens.length-1,value));
+      const resetClosingChars=()=>{
+        closingChars.forEach((char)=>char.style.setProperty("--char-scale","1"));
+      };
+      const updateClosingChars=(clientX,clientY)=>{
+        if(!closingChars.length)return;
+        const radius=Math.max(window.innerWidth*.22,220);
+        closingChars.forEach((char)=>{
+          const rect=char.getBoundingClientRect();
+          const centerX=rect.left+rect.width/2;
+          const centerY=rect.top+rect.height*.56;
+          const distance=Math.hypot(centerX-clientX,centerY-clientY);
+          const influence=Math.max(0,1-distance/radius);
+          const scale=1+Math.pow(influence,1.85)*1.45;
+          char.style.setProperty("--char-scale",scale.toFixed(3));
+        });
+      };
       const paintOffset=(offsetY)=>{
         currentOffset=offsetY;
         if(homeTrack instanceof HTMLElement)homeTrack.style.transform="translate3d(0,"+(-offsetY).toFixed(2)+"px,0)";
@@ -493,7 +530,12 @@ function home(posts: Post[]) {
       homeScroller?.addEventListener("wheel",onWheel,{passive:false});
       window.addEventListener("resize",()=>{
         syncPage();
+        resetClosingChars();
       });
+      if(closingScreen instanceof HTMLElement){
+        closingScreen.addEventListener("mousemove",(event)=>updateClosingChars(event.clientX,event.clientY));
+        closingScreen.addEventListener("mouseleave",resetClosingChars);
+      }
       window.addEventListener("keydown",(event)=>{
         if(event.key==="Escape"){
           setModal(false);
