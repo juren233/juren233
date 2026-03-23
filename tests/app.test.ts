@@ -139,8 +139,12 @@ describe("createApp", () => {
     expect(html).toContain("最新动态");
     expect(html).toContain("最新公告");
     expect(html).not.toContain("更早的动态");
-    expect(html).toContain("poster");
-    expect(html).toContain("blur");
+    expect(html).toContain("当前更新");
+    expect(html).not.toContain("stage poster");
+    expect(html).not.toContain("poster");
+    expect(html).not.toContain("blur");
+    expect(html).not.toContain("Current broadcast");
+    expect(html).not.toContain("Contact slice");
     expect(html).not.toContain("apple green");
     expect(html).not.toContain("打开合作申请");
     expect(html).not.toContain("single update");
