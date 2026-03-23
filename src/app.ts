@@ -482,29 +482,36 @@ textarea{min-height:140px;resize:vertical}
 }
 @media (prefers-color-scheme:dark){
   :root{
-    --bg:#1a1820;
+    --bg:#252339;
     --text:#f2efe8;
     --muted:#a8adba;
     --line:rgba(255,255,255,.1);
     --accent:#f3efe7;
     --accent-text:#111318;
-    --fluid-a: rgba(171,188,255,.18);
-    --fluid-b: rgba(198,177,248,.17);
-    --fluid-c: rgba(232,171,222,.14);
-    --fluid-d: rgba(178,204,255,.14);
-    --fluid-e: rgba(221,192,244,.12);
-    --fluid-glow: rgba(255,243,250,.08);
+    --fluid-a: rgba(196,211,255,.26);
+    --fluid-b: rgba(220,198,255,.24);
+    --fluid-c: rgba(246,197,233,.18);
+    --fluid-d: rgba(201,220,255,.2);
+    --fluid-e: rgba(234,211,248,.16);
+    --fluid-glow: rgba(255,244,250,.1);
   }
   .paged-home::before{
     background:
-      radial-gradient(circle at 18% 18%, rgba(255,239,248,.08), transparent 38%),
-      radial-gradient(circle at 78% 22%, rgba(226,228,255,.06), transparent 32%),
-      linear-gradient(180deg, rgba(255,255,255,.02), transparent 34%, transparent 72%, rgba(255,255,255,.018));
-    opacity:.42;
+      radial-gradient(circle at 18% 18%, rgba(255,231,244,.1), transparent 40%),
+      radial-gradient(circle at 78% 22%, rgba(224,229,255,.08), transparent 34%),
+      linear-gradient(180deg, rgba(255,255,255,.024), transparent 34%, transparent 72%, rgba(255,255,255,.014));
+    opacity:.32;
   }
   .paged-home::after{
-    background:radial-gradient(circle at center, transparent 46%, rgba(72,56,96,.14) 100%);
-    opacity:.1;
+    background:radial-gradient(circle at center, transparent 52%, rgba(58,44,82,.08) 100%);
+    opacity:.05;
+  }
+  .fluid-bg{
+    filter:saturate(118%) contrast(103%);
+  }
+  .fluid-canvas-el{
+    opacity:.7;
+    filter:blur(30px) saturate(124%) contrast(103%);
   }
   .admin-pane,.login-panel,.modal-panel{background:rgba(23,26,33,.78);box-shadow:0 24px 60px rgba(0,0,0,.22)}
   .metric,.record-card{background:rgba(255,255,255,.04)}
@@ -796,7 +803,7 @@ function home(posts: Post[]) {
           renderField(time);
           if(fieldCanvas){
             ctx.globalCompositeOperation="source-over";
-            ctx.globalAlpha=prefersDark.matches ? .56 : .52;
+            ctx.globalAlpha=prefersDark.matches ? .68 : .52;
             ctx.imageSmoothingEnabled=true;
             ctx.drawImage(fieldCanvas,0,0,fieldWidth,fieldHeight,0,0,width,height);
             ctx.globalAlpha=1;
