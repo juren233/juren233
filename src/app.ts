@@ -362,7 +362,7 @@ textarea{min-height:140px;resize:vertical}
   height:120%;
   display:block;
   opacity:.62;
-  filter:blur(32px) saturate(122%) contrast(102%);
+  filter:blur(24px) saturate(122%) contrast(102%);
   transform:translate3d(0,0,0);
   will-change:transform;
 }
@@ -522,7 +522,7 @@ textarea{min-height:140px;resize:vertical}
   }
   .fluid-canvas-el{
     opacity:.7;
-    filter:blur(28px) saturate(130%) contrast(104%);
+    filter:blur(20px) saturate(130%) contrast(104%);
   }
   .admin-pane,.login-panel,.modal-panel{background:rgba(23,26,33,.78);box-shadow:0 24px 60px rgba(0,0,0,.22)}
   .modal-panel{
@@ -732,10 +732,10 @@ function home(posts: Post[]) {
             }));
             seed=Math.random()*1000;
             phaseOffsets=Array.from({length:6},()=>Math.random()*Math.PI*2+seed);
-            warpScaleX=.96+Math.random()*.24;
-            warpScaleY=.94+Math.random()*.26;
-            speedA=.94+Math.random()*.18;
-            speedB=.96+Math.random()*.16;
+            warpScaleX=1+Math.random()*.26;
+            warpScaleY=.98+Math.random()*.28;
+            speedA=1.04+Math.random()*.18;
+            speedB=1.02+Math.random()*.18;
           }
           if(forcePalette){
             rebuildFluidBuffers();
@@ -765,8 +765,8 @@ function home(posts: Post[]) {
               const ny=y/fieldHeight*2-1;
               const warpA=Math.sin((nx*1.9+ny*.42)*warpScaleX+t*speedA+phaseOffsets[0])+Math.cos((ny*1.36-nx*.58)*warpScaleY-t*.84*speedB+phaseOffsets[1]);
               const warpB=Math.cos((nx*1.18-ny*1.62)*warpScaleY-t*.72*speedB+phaseOffsets[2])+Math.sin((nx*.86+ny*1.54)*warpScaleX+t*.96*speedA+phaseOffsets[3]);
-              const ux=nx+warpA*.15+Math.sin(ny*1.72+t*.96+phaseOffsets[4])*.07;
-              const uy=ny+warpB*.13+Math.cos(nx*1.56-t*.78+phaseOffsets[5])*.06;
+              const ux=nx+warpA*.18+Math.sin(ny*1.72+t*1.04+phaseOffsets[4])*.08;
+              const uy=ny+warpB*.16+Math.cos(nx*1.56-t*.84+phaseOffsets[5])*.07;
               const bandA=.5+.5*Math.sin(ux*2.6+uy*1.9+t*1.08+phaseOffsets[0]);
               const bandB=.5+.5*Math.cos(ux*2.1-uy*2.4-t*.94+phaseOffsets[1]);
               const bandC=.5+.5*Math.sin((ux+uy)*1.8+t*.86+phaseOffsets[2]);
@@ -775,7 +775,7 @@ function home(posts: Post[]) {
               const veilB=veilCurve(ux-.2*Math.cos(uy*1.7-t*.88+phaseOffsets[1])-veils[1].offset*.24,veils[1].width)*(.7+.3*bandB);
               const veilC=veilCurve((uy-ux*.34)+.16*Math.sin((ux+uy)*1.5+t*.92+phaseOffsets[2])-veils[2].offset*.22,veils[2].width)*(.68+.32*bandC);
               const veilD=veilCurve((uy+ux*.26)+.14*Math.cos((ux-uy)*1.7-t*.98+phaseOffsets[3])-veils[3].offset*.2,veils[3].width)*(.66+.34*bandD);
-              const sheen=Math.pow(.5+.5*Math.sin(ux*2.3-uy*1.5+t*1.52+phaseOffsets[4]),4)*Math.max(veilA,veilB,veilC,veilD);
+              const sheen=Math.pow(.5+.5*Math.sin(ux*2.3-uy*1.5+t*1.66+phaseOffsets[4]),4)*Math.max(veilA,veilB,veilC,veilD);
               const density=Math.max(veilA,veilB,veilC,veilD)*.84+sheen*.24;
               const alpha=smoothstep(threshold,falloff,density);
               if(alpha<=.001){
