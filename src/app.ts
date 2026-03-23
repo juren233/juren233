@@ -28,7 +28,7 @@ const fallbackPosts: Post[] = [{
 const css = `
 :root{
   color-scheme: light dark;
-  --bg: #f4f1ea;
+  --bg: #f5f1f6;
   --text: #16181d;
   --muted: #5d6472;
   --line: rgba(16,18,24,.12);
@@ -38,12 +38,12 @@ const css = `
   --content: 1200px;
   --transition: 280ms cubic-bezier(.22,1,.36,1);
   --section-gap: clamp(28px,5vw,64px);
-  --fluid-a: rgba(216,224,248,.34);
-  --fluid-b: rgba(225,219,246,.32);
-  --fluid-c: rgba(215,230,240,.3);
-  --fluid-d: rgba(228,225,238,.28);
-  --fluid-e: rgba(235,229,244,.24);
-  --fluid-glow: rgba(255,255,255,.2);
+  --fluid-a: rgba(196,214,255,.34);
+  --fluid-b: rgba(221,205,255,.32);
+  --fluid-c: rgba(242,210,236,.28);
+  --fluid-d: rgba(210,227,255,.24);
+  --fluid-e: rgba(236,220,248,.22);
+  --fluid-glow: rgba(255,246,252,.24);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -321,10 +321,10 @@ textarea{min-height:140px;resize:vertical}
   z-index:0;
   pointer-events:none;
   background:
-    radial-gradient(circle at 18% 16%, rgba(255,255,255,.14), transparent 38%),
-    radial-gradient(circle at 76% 22%, rgba(255,255,255,.06), transparent 32%),
-    linear-gradient(180deg, rgba(255,255,255,.03), transparent 34%, transparent 72%, rgba(17,19,24,.02));
-  opacity:.38;
+    radial-gradient(circle at 18% 16%, rgba(255,248,252,.18), transparent 38%),
+    radial-gradient(circle at 76% 22%, rgba(244,240,255,.12), transparent 32%),
+    linear-gradient(180deg, rgba(255,255,255,.06), transparent 34%, transparent 72%, rgba(201,188,218,.025));
+  opacity:.52;
 }
 .paged-home::after{
   content:"";
@@ -332,8 +332,8 @@ textarea{min-height:140px;resize:vertical}
   inset:0;
   z-index:0;
   pointer-events:none;
-  background:radial-gradient(circle at center, transparent 44%, rgba(17,19,24,.05) 100%);
-  opacity:.12;
+  background:radial-gradient(circle at center, transparent 42%, rgba(151,135,178,.055) 100%);
+  opacity:.1;
   mix-blend-mode:soft-light;
 }
 .fluid-bg{
@@ -342,7 +342,7 @@ textarea{min-height:140px;resize:vertical}
   z-index:0;
   pointer-events:none;
   overflow:hidden;
-  filter:saturate(96%) contrast(100%);
+  filter:saturate(108%) contrast(101%);
 }
 .fluid-canvas-el{
   position:absolute;
@@ -350,8 +350,8 @@ textarea{min-height:140px;resize:vertical}
   width:120%;
   height:120%;
   display:block;
-  opacity:.46;
-  filter:blur(36px) saturate(98%) contrast(100%);
+  opacity:.58;
+  filter:blur(34px) saturate(116%) contrast(101%);
   transform:translate3d(0,0,0);
   will-change:transform;
 }
@@ -482,29 +482,29 @@ textarea{min-height:140px;resize:vertical}
 }
 @media (prefers-color-scheme:dark){
   :root{
-    --bg:#171a20;
+    --bg:#1a1820;
     --text:#f2efe8;
     --muted:#a8adba;
     --line:rgba(255,255,255,.1);
     --accent:#f3efe7;
     --accent-text:#111318;
-    --fluid-a: rgba(206,214,242,.16);
-    --fluid-b: rgba(214,208,238,.15);
-    --fluid-c: rgba(202,217,232,.14);
-    --fluid-d: rgba(220,215,232,.13);
-    --fluid-e: rgba(228,222,239,.12);
-    --fluid-glow: rgba(255,255,255,.08);
+    --fluid-a: rgba(171,188,255,.18);
+    --fluid-b: rgba(198,177,248,.17);
+    --fluid-c: rgba(232,171,222,.14);
+    --fluid-d: rgba(178,204,255,.14);
+    --fluid-e: rgba(221,192,244,.12);
+    --fluid-glow: rgba(255,243,250,.08);
   }
   .paged-home::before{
     background:
-      radial-gradient(circle at 18% 18%, rgba(230,234,248,.06), transparent 38%),
-      radial-gradient(circle at 78% 22%, rgba(239,235,248,.045), transparent 32%),
-      linear-gradient(180deg, rgba(255,255,255,.015), transparent 34%, transparent 72%, rgba(255,255,255,.018));
-    opacity:.34;
+      radial-gradient(circle at 18% 18%, rgba(255,239,248,.08), transparent 38%),
+      radial-gradient(circle at 78% 22%, rgba(226,228,255,.06), transparent 32%),
+      linear-gradient(180deg, rgba(255,255,255,.02), transparent 34%, transparent 72%, rgba(255,255,255,.018));
+    opacity:.42;
   }
   .paged-home::after{
-    background:radial-gradient(circle at center, transparent 46%, rgba(0,0,0,.12) 100%);
-    opacity:.14;
+    background:radial-gradient(circle at center, transparent 46%, rgba(72,56,96,.14) 100%);
+    opacity:.1;
   }
   .admin-pane,.login-panel,.modal-panel{background:rgba(23,26,33,.78);box-shadow:0 24px 60px rgba(0,0,0,.22)}
   .metric,.record-card{background:rgba(255,255,255,.04)}
@@ -774,15 +774,15 @@ function home(posts: Post[]) {
               const blend=Math.min(.16,secondaryWeight/(primaryWeight+secondaryWeight+0.0001)*.16);
               const primary=palette[primaryIndex];
               const secondary=palette[secondaryIndex];
-              const warmLift=.035+sheen*.08;
+              const warmLift=.05+sheen*.06;
               const r=Math.min(255,primary[0]*(1-blend)+secondary[0]*blend+palette[4][0]*sheen*.18+glowColor[0]*warmLift);
               const g=Math.min(255,primary[1]*(1-blend)+secondary[1]*blend+palette[4][1]*sheen*.12+glowColor[1]*warmLift*.78);
               const b=Math.min(255,primary[2]*(1-blend)+secondary[2]*blend+palette[4][2]*sheen*.16+glowColor[2]*warmLift*.72);
-              const colorPresence=Math.min(1,(primaryWeight+secondaryWeight*.3+sheen*.24)/1.06);
+              const colorPresence=Math.min(1,(primaryWeight+secondaryWeight*.26+sheen*.18)/1.1);
               data[i]=Math.round(r);
               data[i+1]=Math.round(g);
               data[i+2]=Math.round(b);
-              data[i+3]=Math.round(edge*colorPresence*(prefersDark.matches?124:108));
+              data[i+3]=Math.round(edge*colorPresence*(prefersDark.matches?108:92));
             }
           }
           fieldCtx.putImageData(fieldImage,0,0);
@@ -796,7 +796,7 @@ function home(posts: Post[]) {
           renderField(time);
           if(fieldCanvas){
             ctx.globalCompositeOperation="source-over";
-            ctx.globalAlpha=prefersDark.matches ? .68 : .58;
+            ctx.globalAlpha=prefersDark.matches ? .56 : .52;
             ctx.imageSmoothingEnabled=true;
             ctx.drawImage(fieldCanvas,0,0,fieldWidth,fieldHeight,0,0,width,height);
             ctx.globalAlpha=1;
