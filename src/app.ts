@@ -255,8 +255,8 @@ textarea{min-height:140px;resize:vertical}
   width:120%;
   height:120%;
   display:block;
-  opacity:.94;
-  filter:blur(12px) saturate(118%) contrast(108%);
+  opacity:.52;
+  filter:blur(22px) saturate(108%) contrast(96%);
   transform:translate3d(0,0,0);
   will-change:transform;
 }
@@ -575,7 +575,7 @@ function home(posts: Post[]) {
           y:height*(.18+Math.random()*.64),
           vx:0,
           vy:0,
-          radius:Math.min(width,height)*(.16+Math.random()*.06),
+          radius:Math.min(width,height)*(.11+Math.random()*.04),
           phase:index*1.27,
           drift:.00006+index*.00001,
           color:palette[index%palette.length],
@@ -587,8 +587,8 @@ function home(posts: Post[]) {
           fluidCanvas.width=Math.round(width*dpr);
           fluidCanvas.height=Math.round(height*dpr);
           ctx.setTransform(dpr,0,0,dpr,0,0);
-          const palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d"),styleOf("--fluid-glow")].map(parseColor);
-          sources=Array.from({length:6},(_,index)=>makeSource(index,palette));
+          const palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d")].map(parseColor);
+          sources=Array.from({length:4},(_,index)=>makeSource(index,palette));
           fieldWidth=Math.max(160,Math.round(width/8));
           fieldHeight=Math.max(110,Math.round(height/8));
           fieldCanvas=document.createElement("canvas");
@@ -604,16 +604,16 @@ function home(posts: Post[]) {
         const renderField=(time)=>{
           if(!fieldCtx || !fieldCanvas || !fieldImage)return;
           const data=fieldImage.data;
-          const threshold=.92;
-          const falloff=1.82;
+          const threshold=1.12;
+          const falloff=1.46;
           for(let y=0;y<fieldHeight;y++){
             for(let x=0;x<fieldWidth;x++){
               const i=(y*fieldWidth+x)*4;
               const px=(x/fieldWidth)*width;
               const py=(y/fieldHeight)*height;
               const angle=flowAngle(px,py,time);
-              const sampleX=px+Math.cos(angle)*18+Math.sin(time*.00008+y*.12)*8;
-              const sampleY=py+Math.sin(angle)*14+Math.cos(time*.00007+x*.11)*6;
+              const sampleX=px+Math.cos(angle)*10+Math.sin(time*.00008+y*.12)*4;
+              const sampleY=py+Math.sin(angle)*8+Math.cos(time*.00007+x*.11)*3;
               let density=0;
               let r=0;
               let g=0;
@@ -624,8 +624,8 @@ function home(posts: Post[]) {
                 const dy=sampleY-source.y;
                 const dist2=dx*dx+dy*dy+1;
                 const influence=(source.radius*source.radius)/dist2;
-                density+=influence*.9;
-                const weight=Math.max(0,influence-.18);
+                density+=influence*.62;
+                const weight=Math.max(0,influence-.24);
                 if(weight>0){
                   r+=source.color[0]*weight;
                   g+=source.color[1]*weight;
@@ -642,7 +642,7 @@ function home(posts: Post[]) {
               data[i]=Math.round(r/weightTotal);
               data[i+1]=Math.round(g/weightTotal);
               data[i+2]=Math.round(b/weightTotal);
-              data[i+3]=Math.round(edge*235);
+              data[i+3]=Math.round(edge*(prefersDark.matches?118:82));
             }
           }
           fieldCtx.putImageData(fieldImage,0,0);
@@ -664,9 +664,11 @@ function home(posts: Post[]) {
           });
           renderField(time);
           if(fieldCanvas){
-            ctx.globalCompositeOperation="lighter";
+            ctx.globalCompositeOperation=prefersDark.matches?"screen":"multiply";
+            ctx.globalAlpha=prefersDark.matches ? .78 : .42;
             ctx.imageSmoothingEnabled=true;
             ctx.drawImage(fieldCanvas,0,0,fieldWidth,fieldHeight,0,0,width,height);
+            ctx.globalAlpha=1;
           }
         };
         resizeFluid();
