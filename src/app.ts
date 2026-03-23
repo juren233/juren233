@@ -213,6 +213,8 @@ textarea{min-height:140px;resize:vertical}
   height:100svh;
   overflow:hidden;
   isolation:isolate;
+  touch-action:none;
+  overscroll-behavior:none;
 }
 .paged-home::before{
   content:"";
@@ -536,6 +538,9 @@ function home(posts: Post[]) {
       let lastWheelAt=0;
       let closingRevealTimer=0;
       let closingRevealStartTimer=0;
+      let touchStartY=null;
+      let touchCurrentY=null;
+      let touchStartedAt=0;
       const prefersReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
       const prefersDark=window.matchMedia("(prefers-color-scheme: dark)");
       const easeInOutCubic=(t)=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
@@ -787,9 +792,37 @@ function home(posts: Post[]) {
         lastWheelAt=now;
         goToDelta(event.deltaY>0?1:-1);
       };
+      const onTouchStart=(event)=>{
+        if(modal?.classList.contains("is-open")||event.touches.length!==1)return;
+        touchStartY=event.touches[0].clientY;
+        touchCurrentY=touchStartY;
+        touchStartedAt=performance.now();
+      };
+      const onTouchMove=(event)=>{
+        if(touchStartY===null||modal?.classList.contains("is-open"))return;
+        touchCurrentY=event.touches[0].clientY;
+        event.preventDefault();
+      };
+      const onTouchEnd=()=>{
+        if(touchStartY===null||touchCurrentY===null)return;
+        const deltaY=touchStartY-touchCurrentY;
+        const elapsed=Math.max(performance.now()-touchStartedAt,1);
+        const velocity=Math.abs(deltaY)/elapsed;
+        if(Math.abs(deltaY)>54||velocity>.38){
+          goToDelta(deltaY>0?1:-1);
+        }
+        touchStartY=null;
+        touchCurrentY=null;
+        touchStartedAt=0;
+      };
       syncPage();
       initFluid();
       homeScroller?.addEventListener("wheel",onWheel,{passive:false});
+      window.addEventListener("wheel",onWheel,{passive:false});
+      homeScroller?.addEventListener("touchstart",onTouchStart,{passive:true});
+      homeScroller?.addEventListener("touchmove",onTouchMove,{passive:false});
+      homeScroller?.addEventListener("touchend",onTouchEnd,{passive:true});
+      homeScroller?.addEventListener("touchcancel",onTouchEnd,{passive:true});
       window.addEventListener("resize",()=>{
         syncPage();
         resetClosingChars();
