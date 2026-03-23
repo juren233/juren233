@@ -561,6 +561,12 @@ function home(posts: Post[]) {
         let fieldHeight=0;
         let fieldImage=null;
         let palette=[];
+        let seed=Math.random()*1000;
+        let bandOffsets=[0,0,0,0,0];
+        let warpScaleX=1;
+        let warpScaleY=1;
+        let speedA=1;
+        let speedB=1;
         const styleOf=(name)=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
         const parseColor=(value)=>{
           const parts=value.match(/[\\d.]+/g);
@@ -574,6 +580,16 @@ function home(posts: Post[]) {
           fluidCanvas.height=Math.round(height*dpr);
           ctx.setTransform(dpr,0,0,dpr,0,0);
           palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d"),styleOf("--fluid-e")].map(parseColor);
+          for(let i=palette.length-1;i>0;i--){
+            const j=Math.floor(Math.random()*(i+1));
+            [palette[i],palette[j]]=[palette[j],palette[i]];
+          }
+          seed=Math.random()*1000;
+          bandOffsets=Array.from({length:5},()=>Math.random()*Math.PI*2+seed);
+          warpScaleX=.86+Math.random()*.34;
+          warpScaleY=.84+Math.random()*.38;
+          speedA=.88+Math.random()*.34;
+          speedB=.9+Math.random()*.32;
           fieldWidth=Math.max(160,Math.round(width/8));
           fieldHeight=Math.max(110,Math.round(height/8));
           fieldCanvas=document.createElement("canvas");
@@ -597,16 +613,16 @@ function home(posts: Post[]) {
               const i=(y*fieldWidth+x)*4;
               const nx=x/fieldWidth-.5;
               const ny=y/fieldHeight-.5;
-              const warpA=Math.sin(ny*3.4+time*.00012)+Math.cos(nx*2.8-time*.00009);
-              const warpB=Math.cos(nx*4.1+time*.00008)-Math.sin(ny*3.1-time*.0001);
+              const warpA=Math.sin(ny*(3.1*warpScaleY)+time*.00012*speedA+bandOffsets[0])+Math.cos(nx*(2.6*warpScaleX)-time*.00009*speedB+bandOffsets[1]);
+              const warpB=Math.cos(nx*(4.0*warpScaleX)+time*.00008*speedB+bandOffsets[2])-Math.sin(ny*(2.9*warpScaleY)-time*.0001*speedA+bandOffsets[3]);
               const sx=nx+warpA*.16;
               const sy=ny+warpB*.14;
-              const bandA=.5+.5*Math.sin(sx*6.2+sy*3.8+time*.00013);
-              const bandB=.5+.5*Math.cos(sx*4.6-sy*4.9-time*.00011+1.2);
-              const bandC=.5+.5*Math.sin(sx*5.4+sy*5.1+time*.00009+2.4);
-              const bandD=.5+.5*Math.cos(sx*7.1-sy*2.7-time*.00008+.7);
-              const bandE=.5+.5*Math.sin(sx*3.8-sy*6.4+time*.0001+1.8);
-              const core=mix(bandA,bandB,.5)*.36 + bandC*.22 + bandD*.16 + bandE*.18;
+              const bandA=.5+.5*Math.sin(sx*6.2+sy*3.8+time*.00016*speedA+bandOffsets[0]);
+              const bandB=.5+.5*Math.cos(sx*4.6-sy*4.9-time*.00014*speedB+bandOffsets[1]);
+              const bandC=.5+.5*Math.sin(sx*5.4+sy*5.1+time*.00012*speedA+bandOffsets[2]);
+              const bandD=.5+.5*Math.cos(sx*7.1-sy*2.7-time*.0001*speedB+bandOffsets[3]);
+              const bandE=.5+.5*Math.sin(sx*3.8-sy*6.4+time*.00013*((speedA+speedB)*.5)+bandOffsets[4]);
+              const core=mix(bandA,bandB,.5)*.34 + bandC*.2 + bandD*.18 + bandE*.2;
               const envelope=1-Math.min(1,Math.hypot(nx*1.08,ny*.96));
               const density=core*envelope*1.6;
               const alpha=smoothstep(threshold,falloff,density);
@@ -615,11 +631,11 @@ function home(posts: Post[]) {
                 continue;
               }
               const edge=1-Math.pow(1-alpha,1.6);
-              const wa=bandA*.3;
-              const wb=bandB*.22;
-              const wc=bandC*.18;
-              const wd=bandD*.14;
-              const we=bandE*.16;
+              const wa=.2+bandA*.22;
+              const wb=.16+bandB*.18;
+              const wc=.14+bandC*.16;
+              const wd=.12+bandD*.14;
+              const we=.14+bandE*.16;
               const total=wa+wb+wc+wd+we;
               const r=(palette[0][0]*wa+palette[1][0]*wb+palette[2][0]*wc+palette[3][0]*wd+palette[4][0]*we)/total;
               const g=(palette[0][1]*wa+palette[1][1]*wb+palette[2][1]*wc+palette[3][1]*wd+palette[4][1]*we)/total;
@@ -627,7 +643,7 @@ function home(posts: Post[]) {
               data[i]=Math.round(r);
               data[i+1]=Math.round(g);
               data[i+2]=Math.round(b);
-              data[i+3]=Math.round(edge*(prefersDark.matches?92:58));
+              data[i+3]=Math.round(edge*(prefersDark.matches?116:72));
             }
           }
           fieldCtx.putImageData(fieldImage,0,0);
