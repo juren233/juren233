@@ -174,19 +174,25 @@ textarea{min-height:140px;resize:vertical}
   pointer-events:none;
   transition:opacity var(--transition),visibility var(--transition);
   z-index:60;
+  -webkit-backdrop-filter:blur(20px) saturate(128%);
+  backdrop-filter:blur(20px) saturate(128%);
 }
 .modal.is-open{opacity:1;visibility:visible;pointer-events:auto}
-.modal-backdrop{position:absolute;inset:0;background:rgba(17,19,24,.4)}
+.modal-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(17,19,24,.18);
+}
 .modal-panel{
   position:relative;
   width:min(100%,760px);
   max-height:min(88vh,920px);
   overflow:auto;
-  background:rgba(255,255,255,.58);
-  border-color:rgba(255,255,255,.36);
+  background:rgba(255,255,255,.48);
+  border-color:rgba(255,255,255,.42);
   box-shadow:0 28px 80px rgba(15,20,30,.16);
-  -webkit-backdrop-filter:blur(28px) saturate(132%);
-  backdrop-filter:blur(28px) saturate(132%);
+  -webkit-backdrop-filter:blur(34px) saturate(142%);
+  backdrop-filter:blur(34px) saturate(142%);
 }
 .modal-head{
   display:flex;
@@ -520,11 +526,11 @@ textarea{min-height:140px;resize:vertical}
   }
   .admin-pane,.login-panel,.modal-panel{background:rgba(23,26,33,.78);box-shadow:0 24px 60px rgba(0,0,0,.22)}
   .modal-panel{
-    background:rgba(26,30,42,.5);
+    background:rgba(30,34,48,.42);
     border-color:rgba(255,255,255,.12);
     box-shadow:0 30px 90px rgba(0,0,0,.32);
-    -webkit-backdrop-filter:blur(30px) saturate(144%);
-    backdrop-filter:blur(30px) saturate(144%);
+    -webkit-backdrop-filter:blur(36px) saturate(150%);
+    backdrop-filter:blur(36px) saturate(150%);
   }
   .metric,.record-card{background:rgba(255,255,255,.04)}
   input,textarea,select,.icon-btn{background:rgba(28,32,40,.9)}
@@ -572,7 +578,7 @@ function home(posts: Post[]) {
           <div class="home-inner">
             <div class="mark">welcome</div>
             <h1 id="brand-title" class="brand-title">juren233.top</h1>
-            <p class="brand-copy">欢迎访问juren233.top主站，了解更多详情，往下滚动查看。</p>
+            <p class="brand-copy">欢迎访问 juren233.top 主站，了解更多详情，往下滚动查看。</p>
           </div>
         </section>
         <section class="home-screen entry-screen" data-page-index="1">
