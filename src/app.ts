@@ -38,11 +38,11 @@ const css = `
   --content: 1200px;
   --transition: 280ms cubic-bezier(.22,1,.36,1);
   --section-gap: clamp(28px,5vw,64px);
-  --fluid-a: rgba(84,118,255,.54);
-  --fluid-b: rgba(255,84,150,.5);
-  --fluid-c: rgba(42,210,192,.46);
-  --fluid-d: rgba(255,164,68,.44);
-  --fluid-e: rgba(160,106,255,.4);
+  --fluid-a: rgba(112,138,255,.38);
+  --fluid-b: rgba(255,118,174,.34);
+  --fluid-c: rgba(88,202,186,.32);
+  --fluid-d: rgba(255,184,112,.28);
+  --fluid-e: rgba(176,132,255,.26);
   --fluid-glow: rgba(255,255,255,.14);
 }
 *{box-sizing:border-box}
@@ -248,7 +248,7 @@ textarea{min-height:140px;resize:vertical}
   z-index:0;
   pointer-events:none;
   overflow:hidden;
-  filter:saturate(142%) contrast(108%);
+  filter:saturate(118%) contrast(102%);
 }
 .fluid-canvas-el{
   position:absolute;
@@ -256,8 +256,8 @@ textarea{min-height:140px;resize:vertical}
   width:120%;
   height:120%;
   display:block;
-  opacity:.76;
-  filter:blur(28px) saturate(156%) contrast(112%);
+  opacity:.62;
+  filter:blur(30px) saturate(124%) contrast(104%);
   transform:translate3d(0,0,0);
   will-change:transform;
 }
@@ -394,11 +394,11 @@ textarea{min-height:140px;resize:vertical}
     --line:rgba(255,255,255,.1);
     --accent:#f3efe7;
     --accent-text:#111318;
-    --fluid-a: rgba(76,116,255,.52);
-    --fluid-b: rgba(255,82,156,.46);
-    --fluid-c: rgba(34,212,188,.4);
-    --fluid-d: rgba(255,166,78,.34);
-    --fluid-e: rgba(158,110,255,.32);
+    --fluid-a: rgba(98,128,255,.34);
+    --fluid-b: rgba(255,102,164,.3);
+    --fluid-c: rgba(62,198,178,.28);
+    --fluid-d: rgba(255,174,96,.24);
+    --fluid-e: rgba(168,126,255,.22);
     --fluid-glow: rgba(255,255,255,.08);
   }
   .paged-home::before{
@@ -574,6 +574,7 @@ function home(posts: Post[]) {
         let pendingHeight=window.innerHeight||1;
         let pendingDpr=Math.min(window.devicePixelRatio||1,1.5);
         let resizeTimer=0;
+        let glowColor=[255,255,255];
         const styleOf=(name)=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
         const parseColor=(value)=>{
           const parts=value.match(/[\\d.]+/g);
@@ -605,6 +606,7 @@ function home(posts: Post[]) {
           height=pendingHeight;
           if(!palette.length){
             palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d"),styleOf("--fluid-e")].map(parseColor);
+            glowColor=parseColor(styleOf("--fluid-glow"));
             for(let i=palette.length-1;i>0;i--){
               const j=Math.floor(Math.random()*(i+1));
               [palette[i],palette[j]]=[palette[j],palette[i]];
@@ -684,10 +686,26 @@ function home(posts: Post[]) {
               const wc=.01+zoneC*1.12+bandC*.08;
               const wd=.01+zoneD*1.08+bandD*.08;
               const we=.01+zoneE*1.14+bandE*.08;
-              const r=Math.min(255,palette[0][0]*wa+palette[1][0]*wb+palette[2][0]*wc+palette[3][0]*wd+palette[4][0]*we);
-              const g=Math.min(255,palette[0][1]*wa+palette[1][1]*wb+palette[2][1]*wc+palette[3][1]*wd+palette[4][1]*we);
-              const b=Math.min(255,palette[0][2]*wa+palette[1][2]*wb+palette[2][2]*wc+palette[3][2]*wd+palette[4][2]*we);
-              const colorPresence=Math.min(1,(wa+wb+wc+wd+we)/1.6);
+              const weights=[wa,wb,wc,wd,we];
+              let primaryIndex=0;
+              let secondaryIndex=1;
+              for(let index=0;index<weights.length;index++){
+                if(weights[index]>weights[primaryIndex]){
+                  secondaryIndex=primaryIndex;
+                  primaryIndex=index;
+                }else if(index!==primaryIndex && weights[index]>weights[secondaryIndex]){
+                  secondaryIndex=index;
+                }
+              }
+              const primaryWeight=weights[primaryIndex];
+              const secondaryWeight=weights[secondaryIndex];
+              const blend=Math.min(.22,secondaryWeight/(primaryWeight+secondaryWeight+0.0001)*.22);
+              const primary=palette[primaryIndex];
+              const secondary=palette[secondaryIndex];
+              const r=Math.min(255,primary[0]*(1-blend)+secondary[0]*blend+glowColor[0]*alpha*.025);
+              const g=Math.min(255,primary[1]*(1-blend)+secondary[1]*blend+glowColor[1]*alpha*.025);
+              const b=Math.min(255,primary[2]*(1-blend)+secondary[2]*blend+glowColor[2]*alpha*.025);
+              const colorPresence=Math.min(1,(primaryWeight+secondaryWeight*.42)/1.18);
               data[i]=Math.round(r);
               data[i+1]=Math.round(g);
               data[i+2]=Math.round(b);
