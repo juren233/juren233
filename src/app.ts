@@ -245,79 +245,61 @@ textarea{min-height:140px;resize:vertical}
   z-index:0;
   pointer-events:none;
   overflow:hidden;
-  filter:saturate(112%);
+  filter:saturate(114%);
 }
-.fluid-blob{
-  position:absolute;
-  border-radius:50%;
-  filter:blur(106px);
-  opacity:.92;
-  transform:translate3d(0,0,0);
-  will-change:transform,opacity;
+.fluid-canvas{
+  width:100%;
+  height:100%;
+  display:block;
 }
-.fluid-blob::after{
-  content:"";
-  position:absolute;
-  inset:14%;
-  border-radius:50%;
-  background:radial-gradient(circle,var(--fluid-glow),transparent 68%);
-  opacity:.5;
+.liquid-field{
+  filter:url(#liquid-warp);
+  transform-origin:center;
+  animation:liquid-field-drift 22s ease-in-out infinite alternate;
 }
-.fluid-blob-a{
-  width:48vw;
-  height:48vw;
-  min-width:380px;
-  min-height:380px;
-  left:-10vw;
-  top:-14vh;
-  background:radial-gradient(circle at 36% 34%,var(--fluid-a),transparent 70%);
-  animation:fluid-drift-a 18s ease-in-out infinite alternate;
+.liquid-mass{
+  transform-box:fill-box;
+  transform-origin:center;
+  mix-blend-mode:screen;
 }
-.fluid-blob-b{
-  width:42vw;
-  height:42vw;
-  min-width:340px;
-  min-height:340px;
-  right:-10vw;
-  top:10vh;
-  background:radial-gradient(circle at 58% 42%,var(--fluid-b),transparent 72%);
-  animation:fluid-drift-b 24s ease-in-out infinite alternate;
+.liquid-mass-a{animation:liquid-mass-a 24s ease-in-out infinite alternate}
+.liquid-mass-b{animation:liquid-mass-b 29s ease-in-out infinite alternate}
+.liquid-mass-c{animation:liquid-mass-c 26s ease-in-out infinite alternate}
+.liquid-mass-d{animation:liquid-mass-d 31s ease-in-out infinite alternate}
+.liquid-mass-e{animation:liquid-mass-e 28s ease-in-out infinite alternate}
+.liquid-vein{
+  opacity:.46;
+  mix-blend-mode:screen;
+  filter:url(#liquid-soften);
+  animation:liquid-vein-drift 34s ease-in-out infinite alternate;
 }
-.fluid-blob-c{
-  width:38vw;
-  height:38vw;
-  min-width:300px;
-  min-height:300px;
-  left:20vw;
-  bottom:-16vh;
-  background:radial-gradient(circle at 42% 56%,var(--fluid-c),transparent 72%);
-  animation:fluid-drift-c 21s ease-in-out infinite alternate;
+@keyframes liquid-field-drift{
+  0%{transform:translate3d(-2%,1%,0) scale(1)}
+  100%{transform:translate3d(3%,-2%,0) scale(1.04)}
 }
-.fluid-blob-d{
-  width:34vw;
-  height:34vw;
-  min-width:260px;
-  min-height:260px;
-  right:12vw;
-  bottom:2vh;
-  background:radial-gradient(circle at 54% 48%,var(--fluid-d),transparent 74%);
-  animation:fluid-drift-d 27s ease-in-out infinite alternate;
+@keyframes liquid-mass-a{
+  0%{transform:translate(-4%,1%) scale(1,.96) rotate(-6deg)}
+  100%{transform:translate(7%,6%) scale(1.14,1.08) rotate(12deg)}
 }
-@keyframes fluid-drift-a{
-  0%{transform:translate3d(-3vw,-2vh,0) scale(1)}
-  100%{transform:translate3d(9vw,11vh,0) scale(1.18)}
+@keyframes liquid-mass-b{
+  0%{transform:translate(3%,-5%) scale(1.05,.92) rotate(4deg)}
+  100%{transform:translate(-8%,7%) scale(.9,1.18) rotate(-10deg)}
 }
-@keyframes fluid-drift-b{
-  0%{transform:translate3d(4vw,-4vh,0) scale(1.06)}
-  100%{transform:translate3d(-10vw,9vh,0) scale(1.22)}
+@keyframes liquid-mass-c{
+  0%{transform:translate(-6%,6%) scale(.96,1.06) rotate(-8deg)}
+  100%{transform:translate(5%,-7%) scale(1.18,.9) rotate(9deg)}
 }
-@keyframes fluid-drift-c{
-  0%{transform:translate3d(-5vw,5vh,0) scale(.96)}
-  100%{transform:translate3d(8vw,-8vh,0) scale(1.16)}
+@keyframes liquid-mass-d{
+  0%{transform:translate(2%,4%) scale(1.02,.94) rotate(-4deg)}
+  100%{transform:translate(-7%,-6%) scale(1.12,1.1) rotate(7deg)}
 }
-@keyframes fluid-drift-d{
-  0%{transform:translate3d(2vw,6vh,0) scale(1)}
-  100%{transform:translate3d(-7vw,-10vh,0) scale(1.2)}
+@keyframes liquid-mass-e{
+  0%{transform:translate(0,-3%) scale(.92,1.08) rotate(6deg)}
+  100%{transform:translate(4%,8%) scale(1.2,.88) rotate(-7deg)}
+}
+@keyframes liquid-vein-drift{
+  0%{transform:translate(-2%,2%) scale(1)}
+  100%{transform:translate(2%,-2%) scale(1.06)}
 }
 .home-track{
   position:relative;
@@ -509,10 +491,51 @@ function home(posts: Post[]) {
     "juren233.top",
     `<main class="paged-home" aria-label="homepage pages">
       <div class="fluid-bg" aria-hidden="true">
-        <span class="fluid-blob fluid-blob-a"></span>
-        <span class="fluid-blob fluid-blob-b"></span>
-        <span class="fluid-blob fluid-blob-c"></span>
-        <span class="fluid-blob fluid-blob-d"></span>
+        <svg class="fluid-canvas" viewBox="0 0 1600 1200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <filter id="liquid-warp" x="-25%" y="-25%" width="150%" height="150%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.004 0.009" numOctaves="3" seed="8" result="noise">
+                <animate attributeName="baseFrequency" dur="28s" values="0.004 0.009;0.007 0.012;0.005 0.008;0.004 0.009" repeatCount="indefinite"/>
+              </feTurbulence>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="110" xChannelSelector="R" yChannelSelector="B"/>
+              <feGaussianBlur stdDeviation="18"/>
+            </filter>
+            <filter id="liquid-soften" x="-25%" y="-25%" width="150%" height="150%">
+              <feGaussianBlur stdDeviation="32"/>
+            </filter>
+            <radialGradient id="liquid-a" cx="36%" cy="34%" r="72%">
+              <stop offset="0%" stop-color="var(--fluid-a)"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </radialGradient>
+            <radialGradient id="liquid-b" cx="58%" cy="42%" r="74%">
+              <stop offset="0%" stop-color="var(--fluid-b)"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </radialGradient>
+            <radialGradient id="liquid-c" cx="42%" cy="56%" r="74%">
+              <stop offset="0%" stop-color="var(--fluid-c)"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </radialGradient>
+            <radialGradient id="liquid-d" cx="54%" cy="48%" r="76%">
+              <stop offset="0%" stop-color="var(--fluid-d)"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </radialGradient>
+            <radialGradient id="liquid-glow" cx="50%" cy="50%" r="70%">
+              <stop offset="0%" stop-color="var(--fluid-glow)"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </radialGradient>
+          </defs>
+          <g class="liquid-field">
+            <ellipse class="liquid-mass liquid-mass-a" cx="320" cy="250" rx="380" ry="290" fill="url(#liquid-a)"/>
+            <ellipse class="liquid-mass liquid-mass-b" cx="1230" cy="350" rx="330" ry="270" fill="url(#liquid-b)"/>
+            <ellipse class="liquid-mass liquid-mass-c" cx="760" cy="930" rx="430" ry="300" fill="url(#liquid-c)"/>
+            <ellipse class="liquid-mass liquid-mass-d" cx="1160" cy="900" rx="290" ry="230" fill="url(#liquid-d)"/>
+            <ellipse class="liquid-mass liquid-mass-e" cx="690" cy="520" rx="520" ry="340" fill="url(#liquid-glow)"/>
+          </g>
+          <g class="liquid-vein">
+            <path d="M-40 420C180 250 360 330 540 470C720 610 890 660 1090 560C1280 460 1470 470 1660 650L1660 940C1420 790 1210 760 1030 840C830 930 610 930 420 820C250 720 90 710 -40 790Z" fill="url(#liquid-a)"/>
+            <path d="M-40 118C170 70 310 120 470 250C640 390 900 430 1110 310C1300 200 1490 190 1660 280L1660 -60H-40Z" fill="url(#liquid-b)"/>
+          </g>
+        </svg>
       </div>
       <div class="home-track">
         <section class="home-screen brand-screen" aria-labelledby="brand-title" data-page-index="0">
