@@ -557,8 +557,8 @@ function home(posts: Post[]) {
         let trails=[];
         const styleOf=(name)=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
         const tint=(value,alpha)=>{
-          if(value.startsWith("rgba(")) return value.replace(/rgba\((.+),[^,]+\)$/,"rgba($1,"+alpha+")");
-          if(value.startsWith("rgb(")) return value.replace("rgb(","rgba(").replace(")",","+alpha+")");
+          const parts=value.match(/[\\d.]+/g);
+          if(parts && parts.length>=3) return "rgba("+parts[0]+","+parts[1]+","+parts[2]+","+alpha+")";
           return value;
         };
         const flowAngle=(x,y,time)=>{
