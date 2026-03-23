@@ -312,7 +312,6 @@ textarea{min-height:140px;resize:vertical}
   padding-inline:var(--char-space,0px);
   transform:scale(var(--char-scale,1));
   transform-origin:center 72%;
-  transition:transform 160ms cubic-bezier(.22,1,.36,1),padding 160ms cubic-bezier(.22,1,.36,1);
   will-change:transform,padding;
 }
 .brand-screen{background:linear-gradient(180deg,transparent,rgba(17,19,24,.03))}
@@ -447,33 +446,69 @@ function home(posts: Post[]) {
       const screens=homeTrack instanceof HTMLElement?Array.from(homeTrack.querySelectorAll(".home-screen")):[];
       const closingScreen=homeTrack instanceof HTMLElement?homeTrack.querySelector(".closing-screen"):null;
       const closingChars=closingScreen instanceof HTMLElement?Array.from(closingScreen.querySelectorAll(".closing-char")):[];
+      const closingStates=closingChars.map(()=>({scale:1,targetScale:1,velocityScale:0,space:0,targetSpace:0,velocitySpace:0}));
       let currentIndex=0;
       let currentOffset=0;
       let animationFrame=0;
+      let closingFrame=0;
       let lastWheelAt=0;
       const prefersReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
       const easeInOutCubic=(t)=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
       const clampIndex=(value)=>Math.max(0,Math.min(screens.length-1,value));
-      const resetClosingChars=()=>{
-        closingChars.forEach((char)=>{
-          char.style.setProperty("--char-scale","1");
-          char.style.setProperty("--char-space","0px");
+      const syncClosingChars=()=>{
+        let active=false;
+        closingChars.forEach((char,index)=>{
+          const state=closingStates[index];
+          state.velocityScale+=(state.targetScale-state.scale)*.16;
+          state.velocityScale*=.72;
+          state.scale+=state.velocityScale;
+          state.velocitySpace+=(state.targetSpace-state.space)*.18;
+          state.velocitySpace*=.7;
+          state.space+=state.velocitySpace;
+          if(Math.abs(state.targetScale-state.scale)>.001||Math.abs(state.velocityScale)>.001||Math.abs(state.targetSpace-state.space)>.02||Math.abs(state.velocitySpace)>.02){
+            active=true;
+          }else{
+            state.scale=state.targetScale;
+            state.space=state.targetSpace;
+            state.velocityScale=0;
+            state.velocitySpace=0;
+          }
+          char.style.setProperty("--char-scale",state.scale.toFixed(3));
+          char.style.setProperty("--char-space",state.space.toFixed(2)+"px");
         });
+        if(active){
+          closingFrame=requestAnimationFrame(syncClosingChars);
+        }else{
+          closingFrame=0;
+        }
+      };
+      const scheduleClosingChars=()=>{
+        if(closingFrame)return;
+        closingFrame=requestAnimationFrame(syncClosingChars);
+      };
+      const resetClosingChars=()=>{
+        closingStates.forEach((state)=>{
+          state.targetScale=1;
+          state.targetSpace=0;
+        });
+        scheduleClosingChars();
       };
       const updateClosingChars=(clientX,clientY)=>{
         if(!closingChars.length)return;
         const radius=Math.max(window.innerWidth*.22,220);
-        closingChars.forEach((char)=>{
+        closingChars.forEach((char,index)=>{
           const rect=char.getBoundingClientRect();
           const centerX=rect.left+rect.width/2;
           const centerY=rect.top+rect.height*.56;
           const distance=Math.hypot(centerX-clientX,centerY-clientY);
           const influence=Math.max(0,1-distance/radius);
           const scale=1+Math.pow(influence,1.85)*1.45;
-          const spacing=Math.pow(influence,1.45)*18;
-          char.style.setProperty("--char-scale",scale.toFixed(3));
-          char.style.setProperty("--char-space",spacing.toFixed(2)+"px");
+          const spacing=Math.max(0,(scale-1)*28+Math.pow(influence,1.2)*12);
+          const state=closingStates[index];
+          state.targetScale=scale;
+          state.targetSpace=spacing;
         });
+        scheduleClosingChars();
       };
       const paintOffset=(offsetY)=>{
         currentOffset=offsetY;
