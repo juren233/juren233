@@ -321,11 +321,10 @@ textarea{min-height:140px;resize:vertical}
   z-index:0;
   pointer-events:none;
   background:
-    radial-gradient(circle at 18% 18%, rgba(255,255,255,.34), transparent 28%),
-    radial-gradient(circle at 78% 22%, rgba(255,255,255,.16), transparent 24%),
-    radial-gradient(circle at 52% 86%, rgba(255,255,255,.18), transparent 30%),
-    linear-gradient(180deg, rgba(255,255,255,.1), transparent 28%, transparent 72%, rgba(17,19,24,.05));
-  opacity:.82;
+    radial-gradient(circle at 18% 16%, rgba(255,255,255,.18), transparent 34%),
+    radial-gradient(circle at 76% 22%, rgba(255,255,255,.08), transparent 28%),
+    linear-gradient(180deg, rgba(255,255,255,.04), transparent 32%, transparent 72%, rgba(17,19,24,.04));
+  opacity:.54;
 }
 .paged-home::after{
   content:"";
@@ -333,10 +332,8 @@ textarea{min-height:140px;resize:vertical}
   inset:0;
   z-index:0;
   pointer-events:none;
-  background:
-    radial-gradient(circle at center, transparent 52%, rgba(17,19,24,.08) 100%),
-    repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 120px);
-  opacity:.42;
+  background:radial-gradient(circle at center, transparent 46%, rgba(17,19,24,.1) 100%);
+  opacity:.24;
   mix-blend-mode:soft-light;
 }
 .fluid-bg{
@@ -500,17 +497,14 @@ textarea{min-height:140px;resize:vertical}
   }
   .paged-home::before{
     background:
-      radial-gradient(circle at 18% 18%, rgba(119,149,255,.18), transparent 30%),
-      radial-gradient(circle at 78% 22%, rgba(255,117,181,.14), transparent 26%),
-      radial-gradient(circle at 52% 86%, rgba(89,222,194,.12), transparent 32%),
-      linear-gradient(180deg, rgba(255,255,255,.03), transparent 28%, transparent 72%, rgba(255,255,255,.04));
-    opacity:.9;
+      radial-gradient(circle at 18% 18%, rgba(122,148,255,.1), transparent 34%),
+      radial-gradient(circle at 78% 22%, rgba(255,140,198,.08), transparent 28%),
+      linear-gradient(180deg, rgba(255,255,255,.02), transparent 32%, transparent 72%, rgba(255,255,255,.03));
+    opacity:.64;
   }
   .paged-home::after{
-    background:
-      radial-gradient(circle at center, transparent 50%, rgba(0,0,0,.24) 100%),
-      repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, transparent 1px 140px);
-    opacity:.5;
+    background:radial-gradient(circle at center, transparent 48%, rgba(0,0,0,.24) 100%);
+    opacity:.28;
   }
   .admin-pane,.login-panel,.modal-panel{background:rgba(23,26,33,.78);box-shadow:0 24px 60px rgba(0,0,0,.22)}
   .metric,.record-card{background:rgba(255,255,255,.04)}
@@ -661,9 +655,9 @@ function home(posts: Post[]) {
         let fieldHeight=0;
         let fieldImage=null;
         let palette=[];
-        let anchors=[];
+        let veils=[];
         let seed=Math.random()*1000;
-        let bandOffsets=[0,0,0,0,0];
+        let phaseOffsets=[0,0,0,0,0,0];
         let warpScaleX=1;
         let warpScaleY=1;
         let speedA=1;
@@ -707,21 +701,16 @@ function home(posts: Post[]) {
           if(!palette.length){
             palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d"),styleOf("--fluid-e")].map(parseColor);
             glowColor=parseColor(styleOf("--fluid-glow"));
-            for(let i=palette.length-1;i>0;i--){
-              const j=Math.floor(Math.random()*(i+1));
-              [palette[i],palette[j]]=[palette[j],palette[i]];
-            }
-            anchors=Array.from({length:5},(_,index)=>({
-              x:.16+((index%3)*.25)+Math.random()*.08,
-              y:.18+(Math.floor(index/3)*.32)+Math.random()*.12,
-              radius:.2+Math.random()*.08,
+            veils=Array.from({length:4},()=>({
+              offset:Math.random()*2-1,
+              width:.42+Math.random()*.18,
             }));
             seed=Math.random()*1000;
-            bandOffsets=Array.from({length:5},()=>Math.random()*Math.PI*2+seed);
-            warpScaleX=.86+Math.random()*.34;
-            warpScaleY=.84+Math.random()*.38;
-            speedA=.88+Math.random()*.34;
-            speedB=.9+Math.random()*.32;
+            phaseOffsets=Array.from({length:6},()=>Math.random()*Math.PI*2+seed);
+            warpScaleX=.92+Math.random()*.22;
+            warpScaleY=.9+Math.random()*.24;
+            speedA=.82+Math.random()*.18;
+            speedB=.84+Math.random()*.16;
           }
           if(forcePalette){
             rebuildFluidBuffers();
@@ -737,56 +726,39 @@ function home(posts: Post[]) {
           const t=Math.max(0,Math.min(1,(value-edge0)/(edge1-edge0||1)));
           return t*t*(3-2*t);
         };
-        const radialMask=(nx,ny,anchor)=>{
-          const dx=nx-(anchor.x-.5);
-          const dy=ny-(anchor.y-.5);
-          const dist=Math.hypot(dx,dy);
-          return 1-smoothstep(anchor.radius*.42,anchor.radius,dist);
-        };
-        const mix=(a,b,t)=>a+(b-a)*t;
+        const veilCurve=(value,width)=>Math.exp(-Math.pow(value/Math.max(width,.001),2));
         const renderField=(time)=>{
           if(!fieldCtx || !fieldCanvas || !fieldImage)return;
           const data=fieldImage.data;
-          const threshold=.54;
-          const falloff=.9;
+          const t=time*0.00013;
+          const threshold=.2;
+          const falloff=.78;
           for(let y=0;y<fieldHeight;y++){
             for(let x=0;x<fieldWidth;x++){
               const i=(y*fieldWidth+x)*4;
-              const nx=x/fieldWidth-.5;
-              const ny=y/fieldHeight-.5;
-              const warpA=Math.sin(ny*(3.1*warpScaleY)+time*.00012*speedA+bandOffsets[0])+Math.cos(nx*(2.6*warpScaleX)-time*.00009*speedB+bandOffsets[1]);
-              const warpB=Math.cos(nx*(4.0*warpScaleX)+time*.00008*speedB+bandOffsets[2])-Math.sin(ny*(2.9*warpScaleY)-time*.0001*speedA+bandOffsets[3]);
-              const sx=nx+warpA*.16;
-              const sy=ny+warpB*.14;
-              const bandA=.5+.5*Math.sin(sx*6.2+sy*3.8+time*.00016*speedA+bandOffsets[0]);
-              const bandB=.5+.5*Math.cos(sx*4.6-sy*4.9-time*.00014*speedB+bandOffsets[1]);
-              const bandC=.5+.5*Math.sin(sx*5.4+sy*5.1+time*.00012*speedA+bandOffsets[2]);
-              const bandD=.5+.5*Math.cos(sx*7.1-sy*2.7-time*.0001*speedB+bandOffsets[3]);
-              const bandE=.5+.5*Math.sin(sx*3.8-sy*6.4+time*.00013*((speedA+speedB)*.5)+bandOffsets[4]);
-              const maskA=radialMask(nx,ny,anchors[0]);
-              const maskB=radialMask(nx,ny,anchors[1]);
-              const maskC=radialMask(nx,ny,anchors[2]);
-              const maskD=radialMask(nx,ny,anchors[3]);
-              const maskE=radialMask(nx,ny,anchors[4]);
-              const zoneA=Math.pow(maskA,.84)*(.62+.38*bandA);
-              const zoneB=Math.pow(maskB,.88)*(.6+.4*bandB);
-              const zoneC=Math.pow(maskC,.9)*(.58+.42*bandC);
-              const zoneD=Math.pow(maskD,.92)*(.56+.44*bandD);
-              const zoneE=Math.pow(maskE,.86)*(.6+.4*bandE);
-              const shared=mix(bandA,bandC,.5)*.03+mix(bandB,bandE,.5)*.025+bandD*.02;
-              const density=(zoneA+zoneB+zoneC+zoneD+zoneE+shared)*.84;
+              const nx=x/fieldWidth*2-1;
+              const ny=y/fieldHeight*2-1;
+              const warpA=Math.sin((nx*1.9+ny*.42)*warpScaleX+t*speedA+phaseOffsets[0])+Math.cos((ny*1.36-nx*.58)*warpScaleY-t*.84*speedB+phaseOffsets[1]);
+              const warpB=Math.cos((nx*1.18-ny*1.62)*warpScaleY-t*.72*speedB+phaseOffsets[2])+Math.sin((nx*.86+ny*1.54)*warpScaleX+t*.96*speedA+phaseOffsets[3]);
+              const ux=nx+warpA*.12+Math.sin(ny*1.72+t*.9+phaseOffsets[4])*.06;
+              const uy=ny+warpB*.1+Math.cos(nx*1.56-t*.72+phaseOffsets[5])*.05;
+              const bandA=.5+.5*Math.sin(ux*2.6+uy*1.9+t*1.08+phaseOffsets[0]);
+              const bandB=.5+.5*Math.cos(ux*2.1-uy*2.4-t*.94+phaseOffsets[1]);
+              const bandC=.5+.5*Math.sin((ux+uy)*1.8+t*.86+phaseOffsets[2]);
+              const bandD=.5+.5*Math.cos((ux-uy)*2.2-t*.78+phaseOffsets[3]);
+              const veilA=veilCurve(uy+.22*Math.sin(ux*1.6+t*1.02+phaseOffsets[0])-veils[0].offset*.26,veils[0].width)*(.7+.3*bandA);
+              const veilB=veilCurve(ux-.2*Math.cos(uy*1.7-t*.88+phaseOffsets[1])-veils[1].offset*.24,veils[1].width)*(.7+.3*bandB);
+              const veilC=veilCurve((uy-ux*.34)+.16*Math.sin((ux+uy)*1.5+t*.92+phaseOffsets[2])-veils[2].offset*.22,veils[2].width)*(.68+.32*bandC);
+              const veilD=veilCurve((uy+ux*.26)+.14*Math.cos((ux-uy)*1.7-t*.98+phaseOffsets[3])-veils[3].offset*.2,veils[3].width)*(.66+.34*bandD);
+              const sheen=Math.pow(.5+.5*Math.sin(ux*2.3-uy*1.5+t*1.4+phaseOffsets[4]),4)*Math.max(veilA,veilB,veilC,veilD);
+              const density=Math.max(veilA,veilB,veilC,veilD)*.84+sheen*.24;
               const alpha=smoothstep(threshold,falloff,density);
               if(alpha<=.001){
                 data[i]=0; data[i+1]=0; data[i+2]=0; data[i+3]=0;
                 continue;
               }
-              const edge=1-Math.pow(1-alpha,1.34);
-              const wa=.01+zoneA*1.22+bandA*.08;
-              const wb=.01+zoneB*1.18+bandB*.08;
-              const wc=.01+zoneC*1.12+bandC*.08;
-              const wd=.01+zoneD*1.08+bandD*.08;
-              const we=.01+zoneE*1.14+bandE*.08;
-              const weights=[wa,wb,wc,wd,we];
+              const edge=1-Math.pow(1-alpha,1.22);
+              const weights=[veilA,veilB,veilC,veilD];
               let primaryIndex=0;
               let secondaryIndex=1;
               for(let index=0;index<weights.length;index++){
@@ -799,31 +771,32 @@ function home(posts: Post[]) {
               }
               const primaryWeight=weights[primaryIndex];
               const secondaryWeight=weights[secondaryIndex];
-              const blend=Math.min(.22,secondaryWeight/(primaryWeight+secondaryWeight+0.0001)*.22);
+              const blend=Math.min(.16,secondaryWeight/(primaryWeight+secondaryWeight+0.0001)*.16);
               const primary=palette[primaryIndex];
               const secondary=palette[secondaryIndex];
-              const r=Math.min(255,primary[0]*(1-blend)+secondary[0]*blend+glowColor[0]*alpha*.025);
-              const g=Math.min(255,primary[1]*(1-blend)+secondary[1]*blend+glowColor[1]*alpha*.025);
-              const b=Math.min(255,primary[2]*(1-blend)+secondary[2]*blend+glowColor[2]*alpha*.025);
-              const colorPresence=Math.min(1,(primaryWeight+secondaryWeight*.42)/1.18);
+              const warmLift=.035+sheen*.08;
+              const r=Math.min(255,primary[0]*(1-blend)+secondary[0]*blend+palette[4][0]*sheen*.18+glowColor[0]*warmLift);
+              const g=Math.min(255,primary[1]*(1-blend)+secondary[1]*blend+palette[4][1]*sheen*.12+glowColor[1]*warmLift*.78);
+              const b=Math.min(255,primary[2]*(1-blend)+secondary[2]*blend+palette[4][2]*sheen*.16+glowColor[2]*warmLift*.72);
+              const colorPresence=Math.min(1,(primaryWeight+secondaryWeight*.3+sheen*.24)/1.06);
               data[i]=Math.round(r);
               data[i+1]=Math.round(g);
               data[i+2]=Math.round(b);
-              data[i+3]=Math.round(edge*colorPresence*(prefersDark.matches?208:170));
+              data[i+3]=Math.round(edge*colorPresence*(prefersDark.matches?124:108));
             }
           }
           fieldCtx.putImageData(fieldImage,0,0);
         };
         const frameFluid=(time)=>{
           fluidFrame=requestAnimationFrame(frameFluid);
-          const frameBudget=isMobile?1000/16:1000/26;
+          const frameBudget=isMobile?1000/16:1000/24;
           if(time-lastRenderAt<frameBudget)return;
           lastRenderAt=time;
           ctx.clearRect(0,0,width,height);
           renderField(time);
           if(fieldCanvas){
             ctx.globalCompositeOperation="source-over";
-            ctx.globalAlpha=prefersDark.matches ? .88 : .82;
+            ctx.globalAlpha=prefersDark.matches ? .68 : .58;
             ctx.imageSmoothingEnabled=true;
             ctx.drawImage(fieldCanvas,0,0,fieldWidth,fieldHeight,0,0,width,height);
             ctx.globalAlpha=1;
