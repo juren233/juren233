@@ -553,8 +553,8 @@ function home(posts: Post[]) {
         let height=1;
         let dpr=1;
         let fluidFrame=0;
-        let masses=[];
-        let trails=[];
+        let sources=[];
+        let particles=[];
         const styleOf=(name)=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
         const tint=(value,alpha)=>{
           const parts=value.match(/[\\d.]+/g);
@@ -565,26 +565,28 @@ function home(posts: Post[]) {
           const nx=x/width-.5;
           const ny=y/height-.5;
           const swirl=Math.atan2(ny,nx);
-          return Math.sin(ny*7.4+time*.00017)*1.35+Math.cos(nx*6.2-time*.00013)*1.08+swirl*.44;
+          return Math.sin(ny*6.8+time*.00016)*1.18+Math.cos(nx*5.6-time*.00011)*1.02+swirl*.62;
         };
-        const makeMass=(index,palette)=>({
-          x:width*(.18+index*.16),
-          y:height*(.26+(index%3)*.18),
-          vx:0,
-          vy:0,
-          radius:Math.min(width,height)*(.15+(index%2)*.03),
-          phase:index*1.31,
-          drift:.00012+index*.000018,
-          color:palette[index%palette.length],
-        });
-        const makeTrail=(index)=>({
+        const makeSource=(index,palette)=>({
           x:width*(.16+Math.random()*.68),
           y:height*(.18+Math.random()*.64),
+          vx:0,
+          vy:0,
+          influence:Math.min(width,height)*(.18+Math.random()*.08),
+          phase:index*1.27,
+          drift:.00008+index*.000012,
+          color:palette[index%palette.length],
+        });
+        const makeParticle=(index)=>({
+          x:width*(.12+Math.random()*.76),
+          y:height*(.12+Math.random()*.76),
           px:0,
           py:0,
-          width:1.3+Math.random()*3.8,
-          life:160+Math.random()*240,
-          massIndex:index%Math.max(masses.length,1),
+          vx:0,
+          vy:0,
+          width:.8+Math.random()*2.6,
+          life:180+Math.random()*260,
+          sourceIndex:index%Math.max(sources.length,1),
           wobble:Math.random()*Math.PI*2,
         });
         const resizeFluid=()=>{
@@ -595,80 +597,82 @@ function home(posts: Post[]) {
           fluidCanvas.height=Math.round(height*dpr);
           ctx.setTransform(dpr,0,0,dpr,0,0);
           const palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d"),styleOf("--fluid-glow")];
-          masses=Array.from({length:5},(_,index)=>makeMass(index,palette));
-          trails=Array.from({length:180},(_,index)=>makeTrail(index));
+          sources=Array.from({length:6},(_,index)=>makeSource(index,palette));
+          particles=Array.from({length:320},(_,index)=>makeParticle(index));
         };
-        const drawMass=(mass)=>{
-          const gradient=ctx.createRadialGradient(mass.x,mass.y,0,mass.x,mass.y,mass.radius*1.9);
-          gradient.addColorStop(0,tint(mass.color,.28));
-          gradient.addColorStop(.32,tint(mass.color,.18));
-          gradient.addColorStop(.7,tint(mass.color,.08));
-          gradient.addColorStop(1,"rgba(0,0,0,0)");
-          ctx.fillStyle=gradient;
-          ctx.beginPath();
-          ctx.ellipse(mass.x,mass.y,mass.radius*1.06,mass.radius*.8,Math.sin(mass.phase)*.8,0,Math.PI*2);
-          ctx.fill();
+        const reseedParticle=(particle,spreadOnly=false)=>{
+          const source=sources[particle.sourceIndex%sources.length];
+          const spread=source?source.influence*.24:Math.min(width,height)*.12;
+          const baseX=source?source.x:width*.5;
+          const baseY=source?source.y:height*.5;
+          particle.x=baseX+(Math.random()-.5)*spread;
+          particle.y=baseY+(Math.random()-.5)*spread;
+          particle.px=particle.x;
+          particle.py=particle.y;
+          particle.vx=0;
+          particle.vy=0;
+          if(!spreadOnly){
+            particle.life=180+Math.random()*260;
+            particle.sourceIndex=(particle.sourceIndex+1+Math.floor(Math.random()*2))%sources.length;
+          }
         };
         const frameFluid=(time)=>{
           fluidFrame=requestAnimationFrame(frameFluid);
-          ctx.clearRect(0,0,width,height);
-          ctx.globalCompositeOperation="lighter";
-          masses.forEach((mass,index)=>{
-            const anchorX=width*(.5+.24*Math.cos(time*mass.drift+mass.phase)+.06*Math.sin(time*.0001+mass.phase*1.7));
-            const anchorY=height*(.5+.2*Math.sin(time*(mass.drift*.92)+mass.phase*.76)+.05*Math.cos(time*.00012+mass.phase*1.1));
-            const angle=flowAngle(mass.x,mass.y,time+index*240);
-            const pullX=(anchorX-mass.x)*.0018;
-            const pullY=(anchorY-mass.y)*.0018;
-            const streamX=Math.cos(angle)*.2;
-            const streamY=Math.sin(angle)*.17;
-            mass.vx=(mass.vx+pullX+streamX)*.974;
-            mass.vy=(mass.vy+pullY+streamY)*.974;
-            if(prefersReducedMotion.matches){
-              mass.x+=pullX*20;
-              mass.y+=pullY*20;
-            }else{
-              mass.x+=mass.vx;
-              mass.y+=mass.vy;
-            }
-            mass.phase+=.011;
-            drawMass(mass);
+          ctx.globalCompositeOperation="source-over";
+          ctx.fillStyle=prefersDark.matches?"rgba(16,18,23,.055)":"rgba(244,241,234,.05)";
+          ctx.fillRect(0,0,width,height);
+          sources.forEach((source,index)=>{
+            const anchorX=width*(.5+.25*Math.cos(time*source.drift+source.phase)+.08*Math.sin(time*.00008+source.phase*1.8));
+            const anchorY=height*(.5+.22*Math.sin(time*(source.drift*.86)+source.phase*.72)+.06*Math.cos(time*.0001+source.phase*1.24));
+            const angle=flowAngle(source.x,source.y,time+index*180);
+            source.vx=(source.vx+(anchorX-source.x)*.0011+Math.cos(angle)*.08)*.982;
+            source.vy=(source.vy+(anchorY-source.y)*.0011+Math.sin(angle)*.07)*.982;
+            source.x+=prefersReducedMotion.matches?source.vx*8:source.vx;
+            source.y+=prefersReducedMotion.matches?source.vy*8:source.vy;
+            source.phase+=.01;
           });
-          trails.forEach((trail,index)=>{
-            const mass=masses[trail.massIndex];
-            trail.px=trail.x;
-            trail.py=trail.y;
-            const angle=flowAngle(trail.x,trail.y,time+trail.wobble*800);
-            const dragX=(mass.x-trail.x)*.0026;
-            const dragY=(mass.y-trail.y)*.0026;
-            trail.x+=Math.cos(angle)*2.2+dragX+Math.sin(time*.00018+trail.wobble)*.26;
-            trail.y+=Math.sin(angle)*1.9+dragY+Math.cos(time*.00016+trail.wobble)*.24;
-            trail.life-=1;
-            if(trail.x<-140||trail.x>width+140||trail.y<-140||trail.y>height+140||trail.life<=0){
-              trail.massIndex=(trail.massIndex+1)%masses.length;
-              trail.x=masses[trail.massIndex].x+(Math.random()-.5)*110;
-              trail.y=masses[trail.massIndex].y+(Math.random()-.5)*110;
-              trail.px=trail.x;
-              trail.py=trail.y;
-              trail.life=160+Math.random()*240;
+          ctx.globalCompositeOperation="lighter";
+          particles.forEach((particle,index)=>{
+            const source=sources[particle.sourceIndex%sources.length];
+            particle.px=particle.x;
+            particle.py=particle.y;
+            const angle=flowAngle(particle.x,particle.y,time+particle.wobble*1200);
+            const dragX=(source.x-particle.x)*.0011;
+            const dragY=(source.y-particle.y)*.0011;
+            const curlX=Math.cos(angle)*1.26+Math.sin(time*.00014+particle.wobble)*.18;
+            const curlY=Math.sin(angle)*1.14+Math.cos(time*.00012+particle.wobble)*.16;
+            particle.vx=(particle.vx+curlX+dragX)*.93;
+            particle.vy=(particle.vy+curlY+dragY)*.93;
+            particle.x+=prefersReducedMotion.matches?dragX*18+curlX*.35:particle.vx;
+            particle.y+=prefersReducedMotion.matches?dragY*18+curlY*.35:particle.vy;
+            particle.life-=1;
+            if(particle.x<-160||particle.x>width+160||particle.y<-160||particle.y>height+160||particle.life<=0){
+              reseedParticle(particle);
             }
-            ctx.strokeStyle=tint(masses[trail.massIndex].color,.065);
-            ctx.lineWidth=trail.width;
+            ctx.strokeStyle=tint(source.color,.042);
+            ctx.lineWidth=particle.width;
             ctx.beginPath();
-            ctx.moveTo(trail.px,trail.py);
-            ctx.quadraticCurveTo((trail.px+trail.x)/2+Math.sin(trail.wobble+time*.0002)*10,(trail.py+trail.y)/2+Math.cos(trail.wobble+time*.00018)*10,trail.x,trail.y);
+            ctx.moveTo(particle.px,particle.py);
+            ctx.quadraticCurveTo(
+              (particle.px+particle.x)/2+Math.sin(particle.wobble+time*.00015)*12,
+              (particle.py+particle.y)/2+Math.cos(particle.wobble+time*.00012)*12,
+              particle.x,
+              particle.y
+            );
             ctx.stroke();
-            if(index%14===0){
-              const halo=ctx.createRadialGradient(trail.x,trail.y,0,trail.x,trail.y,trail.width*9);
-              halo.addColorStop(0,tint(masses[trail.massIndex].color,.08));
+            if(index%22===0){
+              const halo=ctx.createRadialGradient(particle.x,particle.y,0,particle.x,particle.y,particle.width*16);
+              halo.addColorStop(0,tint(source.color,.05));
               halo.addColorStop(1,"rgba(0,0,0,0)");
               ctx.fillStyle=halo;
               ctx.beginPath();
-              ctx.arc(trail.x,trail.y,trail.width*8,0,Math.PI*2);
+              ctx.arc(particle.x,particle.y,particle.width*14,0,Math.PI*2);
               ctx.fill();
             }
           });
         };
         resizeFluid();
+        particles.forEach((particle)=>reseedParticle(particle,true));
         frameFluid(performance.now());
         window.addEventListener("resize",resizeFluid);
         prefersDark.addEventListener?.("change",resizeFluid);
@@ -819,6 +823,7 @@ function home(posts: Post[]) {
       initFluid();
       homeScroller?.addEventListener("wheel",onWheel,{passive:false});
       window.addEventListener("wheel",onWheel,{passive:false});
+      document.addEventListener("wheel",onWheel,{passive:false});
       homeScroller?.addEventListener("touchstart",onTouchStart,{passive:true});
       homeScroller?.addEventListener("touchmove",onTouchMove,{passive:false});
       homeScroller?.addEventListener("touchend",onTouchEnd,{passive:true});
