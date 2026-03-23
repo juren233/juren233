@@ -322,7 +322,7 @@ textarea{min-height:140px;resize:vertical}
 .closing-brand.is-hidden .closing-glyph{
   opacity:0;
   filter:blur(18px);
-  transform:scale(1.34);
+  transform:translateY(12px) scale(1.72);
 }
 .closing-brand.is-revealing .closing-glyph{
   animation:closing-glyph-reveal 980ms cubic-bezier(.12,.82,.18,1) both;
@@ -332,12 +332,7 @@ textarea{min-height:140px;resize:vertical}
   0%{
     opacity:0;
     filter:blur(18px);
-    transform:translateY(12px) scale(1.38);
-  }
-  58%{
-    opacity:.92;
-    filter:blur(7px);
-    transform:translateY(4px) scale(1.14);
+    transform:translateY(12px) scale(1.72);
   }
   100%{
     opacity:1;
@@ -487,7 +482,7 @@ function home(posts: Post[]) {
       const prefersReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
       const easeInOutCubic=(t)=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
       const clampIndex=(value)=>Math.max(0,Math.min(screens.length-1,value));
-      const clearClosingReveal=()=>{
+      const clearClosingReveal=(hide=true)=>{
         if(closingRevealStartTimer){
           clearTimeout(closingRevealStartTimer);
           closingRevealStartTimer=0;
@@ -498,12 +493,16 @@ function home(posts: Post[]) {
         }
         if(closingBrand instanceof HTMLElement){
           closingBrand.classList.remove("is-revealing");
-          closingBrand.classList.add("is-hidden");
+          if(hide){
+            closingBrand.classList.add("is-hidden");
+          }else{
+            closingBrand.classList.remove("is-hidden");
+          }
         }
       };
       const triggerClosingReveal=()=>{
         if(!(closingBrand instanceof HTMLElement)||!closingChars.length)return;
-        clearClosingReveal();
+        clearClosingReveal(true);
         closingRevealStartTimer=window.setTimeout(()=>{
           closingBrand.classList.remove("is-hidden");
           closingBrand.classList.remove("is-revealing");
@@ -557,7 +556,7 @@ function home(posts: Post[]) {
         if(currentIndex===screens.length-1){
           triggerClosingReveal();
         }else{
-          clearClosingReveal();
+          clearClosingReveal(false);
         }
         if(prefersReducedMotion.matches){
           if(animationFrame)cancelAnimationFrame(animationFrame);
