@@ -553,33 +553,17 @@ function home(posts: Post[]) {
         let height=1;
         let dpr=1;
         let fluidFrame=0;
-        let sources=[];
         let fieldCanvas=null;
         let fieldCtx=null;
         let fieldWidth=0;
         let fieldHeight=0;
         let fieldImage=null;
+        let palette=[];
         const styleOf=(name)=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
         const parseColor=(value)=>{
           const parts=value.match(/[\\d.]+/g);
           return parts && parts.length>=3 ? [Number(parts[0]),Number(parts[1]),Number(parts[2])] : [255,255,255];
         };
-        const flowAngle=(x,y,time)=>{
-          const nx=x/width-.5;
-          const ny=y/height-.5;
-          const swirl=Math.atan2(ny,nx);
-          return Math.sin(ny*5.8+time*.00014)*1.12+Math.cos(nx*5.2-time*.0001)*.96+swirl*.74;
-        };
-        const makeSource=(index,palette)=>({
-          x:width*(.16+Math.random()*.68),
-          y:height*(.18+Math.random()*.64),
-          vx:0,
-          vy:0,
-          radius:Math.min(width,height)*(.11+Math.random()*.04),
-          phase:index*1.27,
-          drift:.00006+index*.00001,
-          color:palette[index%palette.length],
-        });
         const resizeFluid=()=>{
           dpr=Math.min(window.devicePixelRatio||1,1.5);
           width=Math.max(window.innerWidth,1);
@@ -587,8 +571,7 @@ function home(posts: Post[]) {
           fluidCanvas.width=Math.round(width*dpr);
           fluidCanvas.height=Math.round(height*dpr);
           ctx.setTransform(dpr,0,0,dpr,0,0);
-          const palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d")].map(parseColor);
-          sources=Array.from({length:4},(_,index)=>makeSource(index,palette));
+          palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d")].map(parseColor);
           fieldWidth=Math.max(160,Math.round(width/8));
           fieldHeight=Math.max(110,Math.round(height/8));
           fieldCanvas=document.createElement("canvas");
@@ -601,48 +584,46 @@ function home(posts: Post[]) {
           const t=Math.max(0,Math.min(1,(value-edge0)/(edge1-edge0||1)));
           return t*t*(3-2*t);
         };
+        const mix=(a,b,t)=>a+(b-a)*t;
         const renderField=(time)=>{
           if(!fieldCtx || !fieldCanvas || !fieldImage)return;
           const data=fieldImage.data;
-          const threshold=1.12;
-          const falloff=1.46;
+          const threshold=.54;
+          const falloff=.86;
           for(let y=0;y<fieldHeight;y++){
             for(let x=0;x<fieldWidth;x++){
               const i=(y*fieldWidth+x)*4;
-              const px=(x/fieldWidth)*width;
-              const py=(y/fieldHeight)*height;
-              const angle=flowAngle(px,py,time);
-              const sampleX=px+Math.cos(angle)*10+Math.sin(time*.00008+y*.12)*4;
-              const sampleY=py+Math.sin(angle)*8+Math.cos(time*.00007+x*.11)*3;
-              let density=0;
-              let r=0;
-              let g=0;
-              let b=0;
-              let weightTotal=0;
-              for(const source of sources){
-                const dx=sampleX-source.x;
-                const dy=sampleY-source.y;
-                const dist2=dx*dx+dy*dy+1;
-                const influence=(source.radius*source.radius)/dist2;
-                density+=influence*.62;
-                const weight=Math.max(0,influence-.24);
-                if(weight>0){
-                  r+=source.color[0]*weight;
-                  g+=source.color[1]*weight;
-                  b+=source.color[2]*weight;
-                  weightTotal+=weight;
-                }
-              }
+              const nx=x/fieldWidth-.5;
+              const ny=y/fieldHeight-.5;
+              const warpA=Math.sin(ny*3.4+time*.00008)+Math.cos(nx*2.8-time*.00006);
+              const warpB=Math.cos(nx*4.1+time*.00005)-Math.sin(ny*3.1-time*.00007);
+              const sx=nx+warpA*.16;
+              const sy=ny+warpB*.14;
+              const bandA=.5+.5*Math.sin(sx*6.2+sy*3.8+time*.00009);
+              const bandB=.5+.5*Math.cos(sx*4.6-sy*4.9-time*.00007+1.2);
+              const bandC=.5+.5*Math.sin(sx*5.4+sy*5.1+time*.00005+2.4);
+              const bandD=.5+.5*Math.cos(sx*7.1-sy*2.7-time*.00004+.7);
+              const core=mix(bandA,bandB,.5)*.42 + bandC*.28 + bandD*.18;
+              const envelope=1-Math.min(1,Math.hypot(nx*1.08,ny*.96));
+              const density=core*envelope*1.6;
               const alpha=smoothstep(threshold,falloff,density);
-              if(alpha<=.001||weightTotal===0){
+              if(alpha<=.001){
                 data[i]=0; data[i+1]=0; data[i+2]=0; data[i+3]=0;
                 continue;
               }
               const edge=1-Math.pow(1-alpha,1.6);
-              data[i]=Math.round(r/weightTotal);
-              data[i+1]=Math.round(g/weightTotal);
-              data[i+2]=Math.round(b/weightTotal);
-              data[i+3]=Math.round(edge*(prefersDark.matches?118:82));
+              const wa=bandA*.42;
+              const wb=bandB*.28;
+              const wc=bandC*.2;
+              const wd=bandD*.16;
+              const total=wa+wb+wc+wd;
+              const r=(palette[0][0]*wa+palette[1][0]*wb+palette[2][0]*wc+palette[3][0]*wd)/total;
+              const g=(palette[0][1]*wa+palette[1][1]*wb+palette[2][1]*wc+palette[3][1]*wd)/total;
+              const b=(palette[0][2]*wa+palette[1][2]*wb+palette[2][2]*wc+palette[3][2]*wd)/total;
+              data[i]=Math.round(r);
+              data[i+1]=Math.round(g);
+              data[i+2]=Math.round(b);
+              data[i+3]=Math.round(edge*(prefersDark.matches?92:58));
             }
           }
           fieldCtx.putImageData(fieldImage,0,0);
@@ -652,20 +633,10 @@ function home(posts: Post[]) {
           ctx.globalCompositeOperation="source-over";
           ctx.fillStyle=prefersDark.matches?"rgba(16,18,23,.055)":"rgba(244,241,234,.05)";
           ctx.fillRect(0,0,width,height);
-          sources.forEach((source,index)=>{
-            const anchorX=width*(.5+.24*Math.cos(time*source.drift+source.phase)+.1*Math.sin(time*.00007+source.phase*1.5));
-            const anchorY=height*(.5+.2*Math.sin(time*(source.drift*.84)+source.phase*.74)+.08*Math.cos(time*.00009+source.phase*1.18));
-            const angle=flowAngle(source.x,source.y,time+index*180);
-            source.vx=(source.vx+(anchorX-source.x)*.001+Math.cos(angle)*.06)*.985;
-            source.vy=(source.vy+(anchorY-source.y)*.001+Math.sin(angle)*.055)*.985;
-            source.x+=prefersReducedMotion.matches?source.vx*8:source.vx;
-            source.y+=prefersReducedMotion.matches?source.vy*8:source.vy;
-            source.phase+=.01;
-          });
           renderField(time);
           if(fieldCanvas){
             ctx.globalCompositeOperation=prefersDark.matches?"screen":"multiply";
-            ctx.globalAlpha=prefersDark.matches ? .78 : .42;
+            ctx.globalAlpha=prefersDark.matches ? .62 : .34;
             ctx.imageSmoothingEnabled=true;
             ctx.drawImage(fieldCanvas,0,0,fieldWidth,fieldHeight,0,0,width,height);
             ctx.globalAlpha=1;
