@@ -631,19 +631,19 @@ function home(posts: Post[]) {
                 continue;
               }
               const edge=1-Math.pow(1-alpha,1.6);
-              const wa=.2+bandA*.22;
-              const wb=.16+bandB*.18;
-              const wc=.14+bandC*.16;
-              const wd=.12+bandD*.14;
-              const we=.14+bandE*.16;
-              const total=wa+wb+wc+wd+we;
-              const r=(palette[0][0]*wa+palette[1][0]*wb+palette[2][0]*wc+palette[3][0]*wd+palette[4][0]*we)/total;
-              const g=(palette[0][1]*wa+palette[1][1]*wb+palette[2][1]*wc+palette[3][1]*wd+palette[4][1]*we)/total;
-              const b=(palette[0][2]*wa+palette[1][2]*wb+palette[2][2]*wc+palette[3][2]*wd+palette[4][2]*we)/total;
+              const wa=.16+bandA*.34;
+              const wb=.12+bandB*.28;
+              const wc=.1+bandC*.24;
+              const wd=.08+bandD*.22;
+              const we=.1+bandE*.26;
+              const r=Math.min(255,palette[0][0]*wa*.8+palette[1][0]*wb*.72+palette[2][0]*wc*.66+palette[3][0]*wd*.58+palette[4][0]*we*.68);
+              const g=Math.min(255,palette[0][1]*wa*.8+palette[1][1]*wb*.72+palette[2][1]*wc*.66+palette[3][1]*wd*.58+palette[4][1]*we*.68);
+              const b=Math.min(255,palette[0][2]*wa*.8+palette[1][2]*wb*.72+palette[2][2]*wc*.66+palette[3][2]*wd*.58+palette[4][2]*we*.68);
+              const colorPresence=Math.min(1,(wa+wb+wc+wd+we)/1.75);
               data[i]=Math.round(r);
               data[i+1]=Math.round(g);
               data[i+2]=Math.round(b);
-              data[i+3]=Math.round(edge*(prefersDark.matches?116:72));
+              data[i+3]=Math.round(edge*colorPresence*(prefersDark.matches?146:92));
             }
           }
           fieldCtx.putImageData(fieldImage,0,0);
