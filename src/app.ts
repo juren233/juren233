@@ -319,25 +319,30 @@ textarea{min-height:140px;resize:vertical}
 .closing-glyph{
   display:block;
 }
+.closing-brand.is-hidden .closing-glyph{
+  opacity:0;
+  filter:blur(18px);
+  transform:scale(1.34);
+}
 .closing-brand.is-revealing .closing-glyph{
-  animation:closing-glyph-reveal 760ms cubic-bezier(.16,1,.3,1) both;
-  animation-delay:calc(var(--char-order,0) * 78ms);
+  animation:closing-glyph-reveal 980ms cubic-bezier(.12,.82,.18,1) both;
+  animation-delay:calc(var(--char-order,0) * 82ms);
 }
 @keyframes closing-glyph-reveal{
   0%{
     opacity:0;
     filter:blur(18px);
-    transform:scale(1.42);
+    transform:translateY(12px) scale(1.38);
   }
-  55%{
-    opacity:1;
-    filter:blur(8px);
-    transform:scale(1.16);
+  58%{
+    opacity:.92;
+    filter:blur(7px);
+    transform:translateY(4px) scale(1.14);
   }
   100%{
     opacity:1;
     filter:blur(0);
-    transform:scale(1);
+    transform:translateY(0) scale(1);
   }
 }
 .brand-screen{background:linear-gradient(180deg,transparent,rgba(17,19,24,.03))}
@@ -432,7 +437,7 @@ function home(posts: Post[]) {
         </section>
         <section class="home-screen closing-screen" aria-label="closing brand page" data-page-index="3">
           <div class="home-inner">
-            <h2 class="closing-brand" aria-label="juren233.top">${closingChars}</h2>
+            <h2 class="closing-brand is-hidden" aria-label="juren233.top">${closingChars}</h2>
           </div>
         </section>
       </div>
@@ -478,27 +483,39 @@ function home(posts: Post[]) {
       let animationFrame=0;
       let lastWheelAt=0;
       let closingRevealTimer=0;
+      let closingRevealStartTimer=0;
       const prefersReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
       const easeInOutCubic=(t)=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
       const clampIndex=(value)=>Math.max(0,Math.min(screens.length-1,value));
       const clearClosingReveal=()=>{
+        if(closingRevealStartTimer){
+          clearTimeout(closingRevealStartTimer);
+          closingRevealStartTimer=0;
+        }
         if(closingRevealTimer){
           clearTimeout(closingRevealTimer);
           closingRevealTimer=0;
         }
-        if(closingBrand instanceof HTMLElement)closingBrand.classList.remove("is-revealing");
+        if(closingBrand instanceof HTMLElement){
+          closingBrand.classList.remove("is-revealing");
+          closingBrand.classList.add("is-hidden");
+        }
       };
       const triggerClosingReveal=()=>{
         if(!(closingBrand instanceof HTMLElement)||!closingChars.length)return;
         clearClosingReveal();
-        closingBrand.classList.remove("is-revealing");
-        void closingBrand.offsetWidth;
-        closingBrand.classList.add("is-revealing");
-        const totalDuration=closingChars.length*78+900;
-        closingRevealTimer=window.setTimeout(()=>{
+        closingRevealStartTimer=window.setTimeout(()=>{
+          closingBrand.classList.remove("is-hidden");
           closingBrand.classList.remove("is-revealing");
-          closingRevealTimer=0;
-        },totalDuration);
+          void closingBrand.offsetWidth;
+          closingBrand.classList.add("is-revealing");
+          const totalDuration=closingChars.length*82+1120;
+          closingRevealTimer=window.setTimeout(()=>{
+            closingBrand.classList.remove("is-revealing");
+            closingRevealTimer=0;
+          },totalDuration);
+          closingRevealStartTimer=0;
+        },100);
       };
       const resetClosingChars=()=>{
         if(closingScreen instanceof HTMLElement)closingScreen.classList.remove("is-pointer-active");
@@ -537,6 +554,11 @@ function home(posts: Post[]) {
         const viewport=window.innerHeight||document.documentElement.clientHeight||1;
         const startOffset=currentOffset;
         const nextOffset=currentIndex*viewport;
+        if(currentIndex===screens.length-1){
+          triggerClosingReveal();
+        }else{
+          clearClosingReveal();
+        }
         if(prefersReducedMotion.matches){
           if(animationFrame)cancelAnimationFrame(animationFrame);
           paintOffset(nextOffset);
@@ -554,11 +576,6 @@ function home(posts: Post[]) {
           }else{
             animationFrame=0;
             paintOffset(nextOffset);
-            if(currentIndex===screens.length-1){
-              triggerClosingReveal();
-            }else{
-              clearClosingReveal();
-            }
           }
         };
         animationFrame=requestAnimationFrame(tick);
