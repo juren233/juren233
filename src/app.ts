@@ -214,17 +214,43 @@ textarea{min-height:140px;resize:vertical}
   overflow:hidden;
   isolation:isolate;
 }
+.paged-home::before{
+  content:"";
+  position:absolute;
+  inset:-12%;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,.34), transparent 28%),
+    radial-gradient(circle at 78% 22%, rgba(255,255,255,.16), transparent 24%),
+    radial-gradient(circle at 52% 86%, rgba(255,255,255,.18), transparent 30%),
+    linear-gradient(180deg, rgba(255,255,255,.1), transparent 28%, transparent 72%, rgba(17,19,24,.05));
+  opacity:.82;
+}
+.paged-home::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at center, transparent 52%, rgba(17,19,24,.08) 100%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 120px);
+  opacity:.42;
+  mix-blend-mode:soft-light;
+}
 .fluid-bg{
   position:absolute;
   inset:-16%;
   z-index:0;
   pointer-events:none;
   overflow:hidden;
+  filter:saturate(112%);
 }
 .fluid-blob{
   position:absolute;
   border-radius:50%;
-  filter:blur(84px);
+  filter:blur(106px);
   opacity:.92;
   transform:translate3d(0,0,0);
   will-change:transform,opacity;
@@ -238,42 +264,42 @@ textarea{min-height:140px;resize:vertical}
   opacity:.5;
 }
 .fluid-blob-a{
-  width:42vw;
-  height:42vw;
-  min-width:320px;
-  min-height:320px;
-  left:-8vw;
-  top:-10vh;
+  width:48vw;
+  height:48vw;
+  min-width:380px;
+  min-height:380px;
+  left:-10vw;
+  top:-14vh;
   background:radial-gradient(circle at 36% 34%,var(--fluid-a),transparent 70%);
   animation:fluid-drift-a 18s ease-in-out infinite alternate;
 }
 .fluid-blob-b{
-  width:34vw;
-  height:34vw;
-  min-width:280px;
-  min-height:280px;
-  right:-6vw;
-  top:16vh;
+  width:42vw;
+  height:42vw;
+  min-width:340px;
+  min-height:340px;
+  right:-10vw;
+  top:10vh;
   background:radial-gradient(circle at 58% 42%,var(--fluid-b),transparent 72%);
   animation:fluid-drift-b 24s ease-in-out infinite alternate;
 }
 .fluid-blob-c{
-  width:30vw;
-  height:30vw;
-  min-width:240px;
-  min-height:240px;
-  left:24vw;
-  bottom:-10vh;
+  width:38vw;
+  height:38vw;
+  min-width:300px;
+  min-height:300px;
+  left:20vw;
+  bottom:-16vh;
   background:radial-gradient(circle at 42% 56%,var(--fluid-c),transparent 72%);
   animation:fluid-drift-c 21s ease-in-out infinite alternate;
 }
 .fluid-blob-d{
-  width:28vw;
-  height:28vw;
-  min-width:220px;
-  min-height:220px;
-  right:18vw;
-  bottom:8vh;
+  width:34vw;
+  height:34vw;
+  min-width:260px;
+  min-height:260px;
+  right:12vw;
+  bottom:2vh;
   background:radial-gradient(circle at 54% 48%,var(--fluid-d),transparent 74%);
   animation:fluid-drift-d 27s ease-in-out infinite alternate;
 }
@@ -306,14 +332,7 @@ textarea{min-height:140px;resize:vertical}
   display:grid;
   align-items:end;
   overflow:hidden;
-}
-.home-screen::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(180deg,rgba(255,255,255,.22),transparent 26%,transparent 74%,rgba(17,19,24,.05));
-  opacity:.24;
-  pointer-events:none;
+  background:transparent;
 }
 .home-inner{
   position:relative;
@@ -425,10 +444,6 @@ textarea{min-height:140px;resize:vertical}
     transform:translateY(0) scale(1);
   }
 }
-.brand-screen{background:linear-gradient(180deg,transparent,rgba(17,19,24,.03))}
-.entry-screen{background:linear-gradient(180deg,rgba(17,19,24,.02),transparent 34%,rgba(17,19,24,.03))}
-.update-screen{background:linear-gradient(180deg,transparent,rgba(17,19,24,.04) 48%,transparent)}
-.closing-screen{background:linear-gradient(180deg,rgba(17,19,24,.03),transparent)}
 @media (prefers-color-scheme:dark){
   :root{
     --bg:#101217;
@@ -443,13 +458,22 @@ textarea{min-height:140px;resize:vertical}
     --fluid-d: rgba(255,185,92,.14);
     --fluid-glow: rgba(255,255,255,.08);
   }
+  .paged-home::before{
+    background:
+      radial-gradient(circle at 18% 18%, rgba(119,149,255,.18), transparent 30%),
+      radial-gradient(circle at 78% 22%, rgba(255,117,181,.14), transparent 26%),
+      radial-gradient(circle at 52% 86%, rgba(89,222,194,.12), transparent 32%),
+      linear-gradient(180deg, rgba(255,255,255,.03), transparent 28%, transparent 72%, rgba(255,255,255,.04));
+    opacity:.9;
+  }
+  .paged-home::after{
+    background:
+      radial-gradient(circle at center, transparent 50%, rgba(0,0,0,.24) 100%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, transparent 1px 140px);
+    opacity:.5;
+  }
   .admin-pane,.login-panel,.modal-panel{background:rgba(23,26,33,.78);box-shadow:0 24px 60px rgba(0,0,0,.22)}
   input,textarea,select,.icon-btn{background:rgba(28,32,40,.9)}
-  .home-screen::before{background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 26%,transparent 74%,rgba(255,255,255,.04))}
-  .brand-screen{background:linear-gradient(180deg,transparent,rgba(255,255,255,.02))}
-  .entry-screen{background:linear-gradient(180deg,rgba(255,255,255,.015),transparent 34%,rgba(255,255,255,.025))}
-  .update-screen{background:linear-gradient(180deg,transparent,rgba(255,255,255,.03) 48%,transparent)}
-  .closing-screen{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
