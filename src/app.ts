@@ -551,24 +551,24 @@ function home(posts: Post[]) {
       <div class="home-track">
         <section class="home-screen brand-screen" aria-labelledby="brand-title" data-page-index="0">
           <div class="home-inner">
-            <div class="mark">juren233.top</div>
+            <div class="mark">welcome</div>
             <h1 id="brand-title" class="brand-title">juren233.top</h1>
-            <p class="brand-copy">一个持续更新的个人主站，用来放置当前项目、公开入口和最新一条值得被看到的站点更新。</p>
+            <p class="brand-copy">欢迎访问juren233.top主站，了解更多详情，往下滚动查看。</p>
           </div>
         </section>
         <section class="home-screen entry-screen" data-page-index="1">
           <div class="home-inner">
             <div class="entry-line">
               <div>
-                <div class="eyebrow">entry</div>
-                <h2 class="entry-title">留下一条消息</h2>
+                <div class="eyebrow">cooperation</div>
+                <h2 class="entry-title">想要获取子域名挂载权？</h2>
               </div>
               <div class="smallcaps">page 02</div>
             </div>
-            <p class="entry-copy">联络入口单独占一整屏。它不做商业化包装，只负责把提案、协作想法和项目链接安静地接进来。</p>
+            <p class="entry-copy">借助juren233.top主域名进行充分提高你的网站调性，随意自定义子域名，何乐而不为？</p>
             <div class="entry-actions">
-              <button class="btn btn-primary" type="button" data-open-modal="cooperation-modal">打开入口</button>
-              <span>如果你已经准备好内容，可以直接写清用途、联系方式和时间要求。</span>
+              <button class="btn btn-primary" type="button" data-open-modal="cooperation-modal">我要获取</button>
+              <span>无论付费或免费获取，一切皆有可能。</span>
             </div>
           </div>
         </section>
@@ -576,10 +576,10 @@ function home(posts: Post[]) {
           <div class="home-inner">
             <div class="update-line">
               <div>
-                <div class="eyebrow">current note</div>
+                <div class="eyebrow">latest updates</div>
                 <h2 class="update-title">最新动态</h2>
               </div>
-              <div class="smallcaps">当前更新</div>
+              <div class="smallcaps">page 03</div>
             </div>
             <div class="update-focus">${leadHtml}</div>
           </div>
@@ -597,7 +597,7 @@ function home(posts: Post[]) {
         <div class="modal-head">
           <div>
             <div class="eyebrow">message</div>
-            <h2 id="cooperation-title">打开入口</h2>
+            <h2 id="cooperation-title">获取子域名</h2>
             <p>把用途、背景、项目链接和联系方式留在这里，我会在后台查看。</p>
           </div>
           <button class="icon-btn" type="button" aria-label="关闭联络入口" data-close-modal>×</button>
