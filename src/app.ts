@@ -568,6 +568,8 @@ function home(posts: Post[]) {
         let warpScaleY=1;
         let speedA=1;
         let speedB=1;
+        let isMobile=window.matchMedia("(max-width: 720px)").matches;
+        let lastRenderAt=0;
         const styleOf=(name)=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
         const parseColor=(value)=>{
           const parts=value.match(/[\\d.]+/g);
@@ -577,27 +579,30 @@ function home(posts: Post[]) {
           dpr=Math.min(window.devicePixelRatio||1,1.5);
           width=Math.max(window.innerWidth,1);
           height=Math.max(window.innerHeight,1);
+          isMobile=window.matchMedia("(max-width: 720px)").matches;
           fluidCanvas.width=Math.round(width*dpr);
           fluidCanvas.height=Math.round(height*dpr);
           ctx.setTransform(dpr,0,0,dpr,0,0);
-          palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d"),styleOf("--fluid-e")].map(parseColor);
-          for(let i=palette.length-1;i>0;i--){
-            const j=Math.floor(Math.random()*(i+1));
-            [palette[i],palette[j]]=[palette[j],palette[i]];
+          if(!palette.length){
+            palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d"),styleOf("--fluid-e")].map(parseColor);
+            for(let i=palette.length-1;i>0;i--){
+              const j=Math.floor(Math.random()*(i+1));
+              [palette[i],palette[j]]=[palette[j],palette[i]];
+            }
+            anchors=Array.from({length:5},(_,index)=>({
+              x:.16+((index%3)*.25)+Math.random()*.08,
+              y:.18+(Math.floor(index/3)*.32)+Math.random()*.12,
+              radius:.2+Math.random()*.08,
+            }));
+            seed=Math.random()*1000;
+            bandOffsets=Array.from({length:5},()=>Math.random()*Math.PI*2+seed);
+            warpScaleX=.86+Math.random()*.34;
+            warpScaleY=.84+Math.random()*.38;
+            speedA=.88+Math.random()*.34;
+            speedB=.9+Math.random()*.32;
           }
-          anchors=Array.from({length:5},(_,index)=>({
-            x:.18+((index%3)*.28)+Math.random()*.12,
-            y:.18+(Math.floor(index/3)*.34)+Math.random()*.18,
-            radius:.28+Math.random()*.12,
-          }));
-          seed=Math.random()*1000;
-          bandOffsets=Array.from({length:5},()=>Math.random()*Math.PI*2+seed);
-          warpScaleX=.86+Math.random()*.34;
-          warpScaleY=.84+Math.random()*.38;
-          speedA=.88+Math.random()*.34;
-          speedB=.9+Math.random()*.32;
-          fieldWidth=Math.max(160,Math.round(width/8));
-          fieldHeight=Math.max(110,Math.round(height/8));
+          fieldWidth=Math.max(isMobile?100:160,Math.round(width/(isMobile?12:8)));
+          fieldHeight=Math.max(isMobile?72:110,Math.round(height/(isMobile?12:8)));
           fieldCanvas=document.createElement("canvas");
           fieldCanvas.width=fieldWidth;
           fieldCanvas.height=fieldHeight;
@@ -618,8 +623,8 @@ function home(posts: Post[]) {
         const renderField=(time)=>{
           if(!fieldCtx || !fieldCanvas || !fieldImage)return;
           const data=fieldImage.data;
-          const threshold=.54;
-          const falloff=.86;
+          const threshold=.62;
+          const falloff=.96;
           for(let y=0;y<fieldHeight;y++){
             for(let x=0;x<fieldWidth;x++){
               const i=(y*fieldWidth+x)*4;
@@ -639,46 +644,48 @@ function home(posts: Post[]) {
               const maskC=radialMask(nx,ny,anchors[2]);
               const maskD=radialMask(nx,ny,anchors[3]);
               const maskE=radialMask(nx,ny,anchors[4]);
-              const core=(mix(bandA,bandB,.5)*.18 + bandC*.14 + bandD*.12 + bandE*.14)
-                + maskA*bandA*.42
-                + maskB*bandB*.36
-                + maskC*bandC*.34
-                + maskD*bandD*.3
-                + maskE*bandE*.34;
-              const envelope=1-Math.min(1,Math.hypot(nx*1.08,ny*.96));
-              const density=core*envelope*1.6;
+              const zoneA=maskA*(.7+.3*bandA);
+              const zoneB=maskB*(.66+.34*bandB);
+              const zoneC=maskC*(.62+.38*bandC);
+              const zoneD=maskD*(.58+.42*bandD);
+              const zoneE=maskE*(.64+.36*bandE);
+              const shared=mix(bandA,bandC,.5)*.06+mix(bandB,bandE,.5)*.05+bandD*.04;
+              const density=(zoneA+zoneB+zoneC+zoneD+zoneE+shared)*.92;
               const alpha=smoothstep(threshold,falloff,density);
               if(alpha<=.001){
                 data[i]=0; data[i+1]=0; data[i+2]=0; data[i+3]=0;
                 continue;
               }
               const edge=1-Math.pow(1-alpha,1.6);
-              const wa=.04+maskA*.44+bandA*.16;
-              const wb=.04+maskB*.38+bandB*.14;
-              const wc=.03+maskC*.34+bandC*.12;
-              const wd=.03+maskD*.3+bandD*.1;
-              const we=.03+maskE*.36+bandE*.12;
+              const wa=.02+zoneA*.96+bandA*.06;
+              const wb=.02+zoneB*.9+bandB*.06;
+              const wc=.02+zoneC*.86+bandC*.06;
+              const wd=.02+zoneD*.82+bandD*.06;
+              const we=.02+zoneE*.88+bandE*.06;
               const r=Math.min(255,palette[0][0]*wa*.8+palette[1][0]*wb*.72+palette[2][0]*wc*.66+palette[3][0]*wd*.58+palette[4][0]*we*.68);
               const g=Math.min(255,palette[0][1]*wa*.8+palette[1][1]*wb*.72+palette[2][1]*wc*.66+palette[3][1]*wd*.58+palette[4][1]*we*.68);
               const b=Math.min(255,palette[0][2]*wa*.8+palette[1][2]*wb*.72+palette[2][2]*wc*.66+palette[3][2]*wd*.58+palette[4][2]*we*.68);
-              const colorPresence=Math.min(1,(wa+wb+wc+wd+we)/1.75);
+              const colorPresence=Math.min(1,(wa+wb+wc+wd+we)/1.28);
               data[i]=Math.round(r);
               data[i+1]=Math.round(g);
               data[i+2]=Math.round(b);
-              data[i+3]=Math.round(edge*colorPresence*(prefersDark.matches?146:92));
+              data[i+3]=Math.round(edge*colorPresence*(prefersDark.matches?168:104));
             }
           }
           fieldCtx.putImageData(fieldImage,0,0);
         };
         const frameFluid=(time)=>{
           fluidFrame=requestAnimationFrame(frameFluid);
+          const frameBudget=isMobile?1000/18:1000/28;
+          if(time-lastRenderAt<frameBudget)return;
+          lastRenderAt=time;
           ctx.globalCompositeOperation="source-over";
           ctx.fillStyle=prefersDark.matches?"rgba(16,18,23,.055)":"rgba(244,241,234,.05)";
           ctx.fillRect(0,0,width,height);
           renderField(time);
           if(fieldCanvas){
             ctx.globalCompositeOperation=prefersDark.matches?"screen":"multiply";
-            ctx.globalAlpha=prefersDark.matches ? .62 : .34;
+            ctx.globalAlpha=prefersDark.matches ? .72 : .46;
             ctx.imageSmoothingEnabled=true;
             ctx.drawImage(fieldCanvas,0,0,fieldWidth,fieldHeight,0,0,width,height);
             ctx.globalAlpha=1;
