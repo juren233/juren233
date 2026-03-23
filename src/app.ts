@@ -514,7 +514,7 @@ function home(posts: Post[]) {
             closingRevealTimer=0;
           },totalDuration);
           closingRevealStartTimer=0;
-        },250);
+        },500);
       };
       const resetClosingChars=()=>{
         if(closingScreen instanceof HTMLElement)closingScreen.classList.remove("is-pointer-active");
