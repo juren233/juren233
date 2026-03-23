@@ -42,6 +42,7 @@ const css = `
   --fluid-b: rgba(255,199,223,.38);
   --fluid-c: rgba(222,242,228,.34);
   --fluid-d: rgba(255,222,176,.28);
+  --fluid-e: rgba(187,208,255,.24);
   --fluid-glow: rgba(255,255,255,.32);
 }
 *{box-sizing:border-box}
@@ -397,6 +398,7 @@ textarea{min-height:140px;resize:vertical}
     --fluid-b: rgba(255,112,168,.22);
     --fluid-c: rgba(92,218,190,.18);
     --fluid-d: rgba(255,185,92,.14);
+    --fluid-e: rgba(149,168,255,.12);
     --fluid-glow: rgba(255,255,255,.08);
   }
   .paged-home::before{
@@ -571,7 +573,7 @@ function home(posts: Post[]) {
           fluidCanvas.width=Math.round(width*dpr);
           fluidCanvas.height=Math.round(height*dpr);
           ctx.setTransform(dpr,0,0,dpr,0,0);
-          palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d")].map(parseColor);
+          palette=[styleOf("--fluid-a"),styleOf("--fluid-b"),styleOf("--fluid-c"),styleOf("--fluid-d"),styleOf("--fluid-e")].map(parseColor);
           fieldWidth=Math.max(160,Math.round(width/8));
           fieldHeight=Math.max(110,Math.round(height/8));
           fieldCanvas=document.createElement("canvas");
@@ -595,15 +597,16 @@ function home(posts: Post[]) {
               const i=(y*fieldWidth+x)*4;
               const nx=x/fieldWidth-.5;
               const ny=y/fieldHeight-.5;
-              const warpA=Math.sin(ny*3.4+time*.00008)+Math.cos(nx*2.8-time*.00006);
-              const warpB=Math.cos(nx*4.1+time*.00005)-Math.sin(ny*3.1-time*.00007);
+              const warpA=Math.sin(ny*3.4+time*.00012)+Math.cos(nx*2.8-time*.00009);
+              const warpB=Math.cos(nx*4.1+time*.00008)-Math.sin(ny*3.1-time*.0001);
               const sx=nx+warpA*.16;
               const sy=ny+warpB*.14;
-              const bandA=.5+.5*Math.sin(sx*6.2+sy*3.8+time*.00009);
-              const bandB=.5+.5*Math.cos(sx*4.6-sy*4.9-time*.00007+1.2);
-              const bandC=.5+.5*Math.sin(sx*5.4+sy*5.1+time*.00005+2.4);
-              const bandD=.5+.5*Math.cos(sx*7.1-sy*2.7-time*.00004+.7);
-              const core=mix(bandA,bandB,.5)*.42 + bandC*.28 + bandD*.18;
+              const bandA=.5+.5*Math.sin(sx*6.2+sy*3.8+time*.00013);
+              const bandB=.5+.5*Math.cos(sx*4.6-sy*4.9-time*.00011+1.2);
+              const bandC=.5+.5*Math.sin(sx*5.4+sy*5.1+time*.00009+2.4);
+              const bandD=.5+.5*Math.cos(sx*7.1-sy*2.7-time*.00008+.7);
+              const bandE=.5+.5*Math.sin(sx*3.8-sy*6.4+time*.0001+1.8);
+              const core=mix(bandA,bandB,.5)*.36 + bandC*.22 + bandD*.16 + bandE*.18;
               const envelope=1-Math.min(1,Math.hypot(nx*1.08,ny*.96));
               const density=core*envelope*1.6;
               const alpha=smoothstep(threshold,falloff,density);
@@ -612,14 +615,15 @@ function home(posts: Post[]) {
                 continue;
               }
               const edge=1-Math.pow(1-alpha,1.6);
-              const wa=bandA*.42;
-              const wb=bandB*.28;
-              const wc=bandC*.2;
-              const wd=bandD*.16;
-              const total=wa+wb+wc+wd;
-              const r=(palette[0][0]*wa+palette[1][0]*wb+palette[2][0]*wc+palette[3][0]*wd)/total;
-              const g=(palette[0][1]*wa+palette[1][1]*wb+palette[2][1]*wc+palette[3][1]*wd)/total;
-              const b=(palette[0][2]*wa+palette[1][2]*wb+palette[2][2]*wc+palette[3][2]*wd)/total;
+              const wa=bandA*.3;
+              const wb=bandB*.22;
+              const wc=bandC*.18;
+              const wd=bandD*.14;
+              const we=bandE*.16;
+              const total=wa+wb+wc+wd+we;
+              const r=(palette[0][0]*wa+palette[1][0]*wb+palette[2][0]*wc+palette[3][0]*wd+palette[4][0]*we)/total;
+              const g=(palette[0][1]*wa+palette[1][1]*wb+palette[2][1]*wc+palette[3][1]*wd+palette[4][1]*we)/total;
+              const b=(palette[0][2]*wa+palette[1][2]*wb+palette[2][2]*wc+palette[3][2]*wd+palette[4][2]*we)/total;
               data[i]=Math.round(r);
               data[i+1]=Math.round(g);
               data[i+2]=Math.round(b);
