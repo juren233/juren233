@@ -200,11 +200,13 @@ textarea{min-height:140px;resize:vertical}
 .paged-home{
   position:relative;
   height:100svh;
-  overflow-y:auto;
-  scroll-behavior:smooth;
-  scroll-snap-type:y mandatory;
-  overscroll-behavior-y:contain;
-  -webkit-overflow-scrolling:touch;
+  overflow:hidden;
+  isolation:isolate;
+}
+.home-track{
+  position:relative;
+  height:100%;
+  will-change:transform;
 }
 .home-screen{
   --screen-progress:0;
@@ -215,9 +217,7 @@ textarea{min-height:140px;resize:vertical}
   --screen-tilt:0deg;
   --screen-fade:.1;
   position:relative;
-  min-height:100svh;
-  scroll-snap-align:start;
-  scroll-snap-stop:always;
+  height:100svh;
   padding:clamp(32px,7vw,84px) var(--gutter);
   display:grid;
   align-items:end;
@@ -335,7 +335,6 @@ textarea{min-height:140px;resize:vertical}
   .closing-screen{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
 }
 @media (prefers-reduced-motion:reduce){
-  html,.paged-home{scroll-behavior:auto}
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
 @media (max-width:980px){
@@ -365,47 +364,49 @@ function home(posts: Post[]) {
   const leadHtml = `<div class="update-meta">${lead.pinned ? '<span class="pill">置顶</span>' : ""}<span class="smallcaps">${leadDate}</span>${lead.tags.map((t)=>`<span class="tag">${esc(t)}</span>`).join("")}</div><h3>${esc(lead.title || "未命名动态")}</h3><p>${esc(lead.body)}</p>`;
   return shell(
     "juren233.top",
-    `<main class="paged-home">
-      <section class="home-screen brand-screen" aria-labelledby="brand-title">
-        <div class="home-inner">
-          <div class="mark">juren233.top</div>
-          <h1 id="brand-title" class="brand-title">juren233.top</h1>
-          <p class="brand-copy">一个持续更新的个人主站，用来放置当前项目、公开入口和最新一条值得被看到的站点更新。</p>
-        </div>
-      </section>
-      <section class="home-screen entry-screen">
-        <div class="home-inner">
-          <div class="entry-line">
-            <div>
-              <div class="eyebrow">entry</div>
-              <h2 class="entry-title">留下一条消息</h2>
+    `<main class="paged-home" aria-label="homepage pages">
+      <div class="home-track">
+        <section class="home-screen brand-screen" aria-labelledby="brand-title" data-page-index="0">
+          <div class="home-inner">
+            <div class="mark">juren233.top</div>
+            <h1 id="brand-title" class="brand-title">juren233.top</h1>
+            <p class="brand-copy">一个持续更新的个人主站，用来放置当前项目、公开入口和最新一条值得被看到的站点更新。</p>
+          </div>
+        </section>
+        <section class="home-screen entry-screen" data-page-index="1">
+          <div class="home-inner">
+            <div class="entry-line">
+              <div>
+                <div class="eyebrow">entry</div>
+                <h2 class="entry-title">留下一条消息</h2>
+              </div>
+              <div class="smallcaps">page 02</div>
             </div>
-            <div class="smallcaps">page 02</div>
-          </div>
-          <p class="entry-copy">联络入口单独占一整屏。它不做商业化包装，只负责把提案、协作想法和项目链接安静地接进来。</p>
-          <div class="entry-actions">
-            <button class="btn btn-primary" type="button" data-open-modal="cooperation-modal">打开入口</button>
-            <span>如果你已经准备好内容，可以直接写清用途、联系方式和时间要求。</span>
-          </div>
-        </div>
-      </section>
-      <section class="home-screen update-screen">
-        <div class="home-inner">
-          <div class="update-line">
-            <div>
-              <div class="eyebrow">current note</div>
-              <h2 class="update-title">最新动态</h2>
+            <p class="entry-copy">联络入口单独占一整屏。它不做商业化包装，只负责把提案、协作想法和项目链接安静地接进来。</p>
+            <div class="entry-actions">
+              <button class="btn btn-primary" type="button" data-open-modal="cooperation-modal">打开入口</button>
+              <span>如果你已经准备好内容，可以直接写清用途、联系方式和时间要求。</span>
             </div>
-            <div class="smallcaps">当前更新</div>
           </div>
-          <div class="update-focus">${leadHtml}</div>
-        </div>
-      </section>
-      <section class="home-screen closing-screen" aria-label="closing brand page">
-        <div class="home-inner">
-          <h2 class="closing-brand">juren233.top</h2>
-        </div>
-      </section>
+        </section>
+        <section class="home-screen update-screen" data-page-index="2">
+          <div class="home-inner">
+            <div class="update-line">
+              <div>
+                <div class="eyebrow">current note</div>
+                <h2 class="update-title">最新动态</h2>
+              </div>
+              <div class="smallcaps">当前更新</div>
+            </div>
+            <div class="update-focus">${leadHtml}</div>
+          </div>
+        </section>
+        <section class="home-screen closing-screen" aria-label="closing brand page" data-page-index="3">
+          <div class="home-inner">
+            <h2 class="closing-brand">juren233.top</h2>
+          </div>
+        </section>
+      </div>
     </main>
     <div class="modal" id="cooperation-modal" aria-hidden="true">
       <div class="modal-backdrop" data-close-modal></div>
@@ -433,20 +434,29 @@ function home(posts: Post[]) {
     </div>
     <script>
       const homeScroller=document.querySelector(".paged-home");
+      const homeTrack=document.querySelector(".home-track");
       const modal=document.getElementById("cooperation-modal");
       const openers=document.querySelectorAll('[data-open-modal="cooperation-modal"]');
       const closers=document.querySelectorAll("[data-close-modal]");
       const form=document.getElementById("cooperation-form");
       const message=document.getElementById("form-message");
-      const screens=homeScroller instanceof HTMLElement?Array.from(homeScroller.querySelectorAll(".home-screen")):[];
+      const screens=homeTrack instanceof HTMLElement?Array.from(homeTrack.querySelectorAll(".home-screen")):[];
       let frame=0;
-      const updateScreenState=()=>{
-        frame=0;
-        if(!(homeScroller instanceof HTMLElement)||!screens.length)return;
-        const viewport=homeScroller.clientHeight||window.innerHeight;
-        screens.forEach((screen)=>{
-          const rect=screen.getBoundingClientRect();
-          const offset=(rect.top+rect.height/2-viewport/2)/viewport;
+      let currentIndex=0;
+      let currentOffset=0;
+      let targetOffset=0;
+      let animationFrame=0;
+      let animationToken=0;
+      let lastWheelAt=0;
+      const prefersReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
+      const easeInOutCubic=(t)=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+      const clampIndex=(value)=>Math.max(0,Math.min(screens.length-1,value));
+      const renderScreens=(offsetY)=>{
+        if(!screens.length)return;
+        const viewport=window.innerHeight||document.documentElement.clientHeight||1;
+        screens.forEach((screen,index)=>{
+          const center=index*viewport+viewport/2;
+          const offset=(center-(offsetY+viewport/2))/viewport;
           const distance=Math.min(Math.abs(offset),1.25);
           const progress=Math.max(0,1-distance);
           const eased=1-Math.pow(1-progress,2.2);
@@ -462,22 +472,99 @@ function home(posts: Post[]) {
           screen.style.setProperty("--screen-tilt",tilt.toFixed(2)+"deg");
         });
       };
-      const scheduleUpdate=()=>{
-        if(frame)return;
-        frame=requestAnimationFrame(updateScreenState);
+      const paintOffset=(offsetY)=>{
+        currentOffset=offsetY;
+        if(homeTrack instanceof HTMLElement)homeTrack.style.transform="translate3d(0,"+(-offsetY).toFixed(2)+"px,0)";
+        renderScreens(offsetY);
+      };
+      const syncPage=()=>{
+        const viewport=window.innerHeight||document.documentElement.clientHeight||1;
+        targetOffset=currentIndex*viewport;
+        paintOffset(targetOffset);
+      };
+      const animateTo=(index)=>{
+        if(!screens.length)return;
+        currentIndex=clampIndex(index);
+        const viewport=window.innerHeight||document.documentElement.clientHeight||1;
+        const startOffset=currentOffset;
+        const nextOffset=currentIndex*viewport;
+        targetOffset=nextOffset;
+        if(prefersReducedMotion.matches){
+          if(animationFrame)cancelAnimationFrame(animationFrame);
+          paintOffset(nextOffset);
+          return;
+        }
+        const startTime=performance.now();
+        const duration=920;
+        const token=++animationToken;
+        if(animationFrame)cancelAnimationFrame(animationFrame);
+        const tick=(now)=>{
+          if(token!==animationToken)return;
+          const progress=Math.min((now-startTime)/duration,1);
+          const eased=easeInOutCubic(progress);
+          paintOffset(startOffset+(nextOffset-startOffset)*eased);
+          if(progress<1){
+            animationFrame=requestAnimationFrame(tick);
+          }else{
+            animationFrame=0;
+            paintOffset(nextOffset);
+          }
+        };
+        animationFrame=requestAnimationFrame(tick);
       };
       const setModal=(open)=>{
         if(!modal)return;
         modal.classList.toggle("is-open",open);
         modal.setAttribute("aria-hidden",String(!open));
-        if(homeScroller instanceof HTMLElement)homeScroller.style.overflowY=open?"hidden":"auto";
+        if(homeScroller instanceof HTMLElement)homeScroller.style.pointerEvents=open?"none":"auto";
+        if(homeTrack instanceof HTMLElement)homeTrack.style.pointerEvents=open?"none":"auto";
       };
-      updateScreenState();
-      homeScroller?.addEventListener("scroll",scheduleUpdate,{passive:true});
-      window.addEventListener("resize",scheduleUpdate);
+      const goToDelta=(delta)=>{
+        if(!screens.length||modal?.classList.contains("is-open"))return;
+        const nextIndex=clampIndex(currentIndex+delta);
+        if(nextIndex===currentIndex)return;
+        animateTo(nextIndex);
+      };
+      const onWheel=(event)=>{
+        if(!(homeScroller instanceof HTMLElement)||modal?.classList.contains("is-open"))return;
+        event.preventDefault();
+        if(Math.abs(event.deltaY)<18)return;
+        const now=performance.now();
+        if(now-lastWheelAt<640)return;
+        lastWheelAt=now;
+        goToDelta(event.deltaY>0?1:-1);
+      };
+      syncPage();
+      homeScroller?.addEventListener("wheel",onWheel,{passive:false});
+      window.addEventListener("resize",()=>{
+        if(frame)cancelAnimationFrame(frame);
+        frame=requestAnimationFrame(syncPage);
+      });
+      window.addEventListener("keydown",(event)=>{
+        if(event.key==="Escape"){
+          setModal(false);
+          return;
+        }
+        if(modal?.classList.contains("is-open"))return;
+        if(["ArrowDown","PageDown"," "].includes(event.key)){
+          event.preventDefault();
+          goToDelta(1);
+        }
+        if(["ArrowUp","PageUp"].includes(event.key)){
+          event.preventDefault();
+          goToDelta(-1);
+        }
+        if(event.key==="Home"){
+          event.preventDefault();
+          animateTo(0);
+        }
+        if(event.key==="End"){
+          event.preventDefault();
+          animateTo(screens.length-1);
+        }
+      });
       openers.forEach((node)=>node.addEventListener("click",()=>setModal(true)));
       closers.forEach((node)=>node.addEventListener("click",()=>setModal(false)));
-      window.addEventListener("keydown",(event)=>{if(event.key==="Escape")setModal(false);});
       form?.addEventListener("submit",async(event)=>{
         event.preventDefault();
         if(!message)return;
