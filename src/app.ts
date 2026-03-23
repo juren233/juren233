@@ -312,7 +312,33 @@ textarea{min-height:140px;resize:vertical}
   padding-inline:var(--char-space,0px);
   transform:scale(var(--char-scale,1));
   transform-origin:center 72%;
+  transition:transform 220ms cubic-bezier(.2,.8,.2,1),padding 220ms cubic-bezier(.2,.8,.2,1);
   will-change:transform,padding;
+}
+.closing-screen.is-pointer-active .closing-char{transition:none}
+.closing-glyph{
+  display:block;
+}
+.closing-brand.is-revealing .closing-glyph{
+  animation:closing-glyph-reveal 760ms cubic-bezier(.16,1,.3,1) both;
+  animation-delay:calc(var(--char-order,0) * 78ms);
+}
+@keyframes closing-glyph-reveal{
+  0%{
+    opacity:0;
+    filter:blur(18px);
+    transform:scale(1.42);
+  }
+  55%{
+    opacity:1;
+    filter:blur(8px);
+    transform:scale(1.16);
+  }
+  100%{
+    opacity:1;
+    filter:blur(0);
+    transform:scale(1);
+  }
 }
 .brand-screen{background:linear-gradient(180deg,transparent,rgba(17,19,24,.03))}
 .entry-screen{background:linear-gradient(180deg,rgba(17,19,24,.02),transparent 34%,rgba(17,19,24,.03))}
@@ -364,7 +390,7 @@ function home(posts: Post[]) {
   const leadDate = new Date(lead.createdAt).toLocaleDateString("zh-CN");
   const leadHtml = `<div class="update-meta">${lead.pinned ? '<span class="pill">置顶</span>' : ""}<span class="smallcaps">${leadDate}</span>${lead.tags.map((t)=>`<span class="tag">${esc(t)}</span>`).join("")}</div><h3>${esc(lead.title || "未命名动态")}</h3><p>${esc(lead.body)}</p>`;
   const closingText = "juren233.top";
-  const closingChars = Array.from(closingText).map((char, index)=>`<span class="closing-char" data-char-index="${index}" aria-hidden="true">${esc(char)}</span>`).join("");
+  const closingChars = Array.from(closingText).map((char, index)=>`<span class="closing-char" data-char-index="${index}" style="--char-order:${index}" aria-hidden="true"><span class="closing-glyph">${esc(char)}</span></span>`).join("");
   return shell(
     "juren233.top",
     `<main class="paged-home" aria-label="homepage pages">
@@ -445,56 +471,45 @@ function home(posts: Post[]) {
       const message=document.getElementById("form-message");
       const screens=homeTrack instanceof HTMLElement?Array.from(homeTrack.querySelectorAll(".home-screen")):[];
       const closingScreen=homeTrack instanceof HTMLElement?homeTrack.querySelector(".closing-screen"):null;
+      const closingBrand=closingScreen instanceof HTMLElement?closingScreen.querySelector(".closing-brand"):null;
       const closingChars=closingScreen instanceof HTMLElement?Array.from(closingScreen.querySelectorAll(".closing-char")):[];
-      const closingStates=closingChars.map(()=>({scale:1,targetScale:1,velocityScale:0,space:0,targetSpace:0,velocitySpace:0}));
       let currentIndex=0;
       let currentOffset=0;
       let animationFrame=0;
-      let closingFrame=0;
       let lastWheelAt=0;
+      let closingRevealTimer=0;
       const prefersReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
       const easeInOutCubic=(t)=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
       const clampIndex=(value)=>Math.max(0,Math.min(screens.length-1,value));
-      const syncClosingChars=()=>{
-        let active=false;
-        closingChars.forEach((char,index)=>{
-          const state=closingStates[index];
-          state.velocityScale+=(state.targetScale-state.scale)*.11;
-          state.velocityScale*=.78;
-          state.scale+=state.velocityScale;
-          state.velocitySpace+=(state.targetSpace-state.space)*.12;
-          state.velocitySpace*=.76;
-          state.space+=state.velocitySpace;
-          if(Math.abs(state.targetScale-state.scale)>.001||Math.abs(state.velocityScale)>.001||Math.abs(state.targetSpace-state.space)>.02||Math.abs(state.velocitySpace)>.02){
-            active=true;
-          }else{
-            state.scale=state.targetScale;
-            state.space=state.targetSpace;
-            state.velocityScale=0;
-            state.velocitySpace=0;
-          }
-          char.style.setProperty("--char-scale",state.scale.toFixed(3));
-          char.style.setProperty("--char-space",state.space.toFixed(2)+"px");
-        });
-        if(active){
-          closingFrame=requestAnimationFrame(syncClosingChars);
-        }else{
-          closingFrame=0;
+      const clearClosingReveal=()=>{
+        if(closingRevealTimer){
+          clearTimeout(closingRevealTimer);
+          closingRevealTimer=0;
         }
+        if(closingBrand instanceof HTMLElement)closingBrand.classList.remove("is-revealing");
       };
-      const scheduleClosingChars=()=>{
-        if(closingFrame)return;
-        closingFrame=requestAnimationFrame(syncClosingChars);
+      const triggerClosingReveal=()=>{
+        if(!(closingBrand instanceof HTMLElement)||!closingChars.length)return;
+        clearClosingReveal();
+        closingBrand.classList.remove("is-revealing");
+        void closingBrand.offsetWidth;
+        closingBrand.classList.add("is-revealing");
+        const totalDuration=closingChars.length*78+900;
+        closingRevealTimer=window.setTimeout(()=>{
+          closingBrand.classList.remove("is-revealing");
+          closingRevealTimer=0;
+        },totalDuration);
       };
       const resetClosingChars=()=>{
-        closingStates.forEach((state)=>{
-          state.targetScale=1;
-          state.targetSpace=0;
+        if(closingScreen instanceof HTMLElement)closingScreen.classList.remove("is-pointer-active");
+        closingChars.forEach((char)=>{
+          char.style.setProperty("--char-scale","1");
+          char.style.setProperty("--char-space","0px");
         });
-        scheduleClosingChars();
       };
       const updateClosingChars=(clientX,clientY)=>{
         if(!closingChars.length)return;
+        if(closingScreen instanceof HTMLElement)closingScreen.classList.add("is-pointer-active");
         const radius=Math.max(window.innerWidth*.22,220);
         closingChars.forEach((char,index)=>{
           const rect=char.getBoundingClientRect();
@@ -504,11 +519,9 @@ function home(posts: Post[]) {
           const influence=Math.max(0,1-distance/radius);
           const scale=1+Math.pow(influence,1.85)*1.45;
           const spacing=Math.max(0,(scale-1)*34+Math.pow(influence,1.15)*16);
-          const state=closingStates[index];
-          state.targetScale=scale;
-          state.targetSpace=spacing;
+          char.style.setProperty("--char-scale",scale.toFixed(3));
+          char.style.setProperty("--char-space",spacing.toFixed(2)+"px");
         });
-        scheduleClosingChars();
       };
       const paintOffset=(offsetY)=>{
         currentOffset=offsetY;
@@ -541,6 +554,11 @@ function home(posts: Post[]) {
           }else{
             animationFrame=0;
             paintOffset(nextOffset);
+            if(currentIndex===screens.length-1){
+              triggerClosingReveal();
+            }else{
+              clearClosingReveal();
+            }
           }
         };
         animationFrame=requestAnimationFrame(tick);
@@ -572,6 +590,7 @@ function home(posts: Post[]) {
       window.addEventListener("resize",()=>{
         syncPage();
         resetClosingChars();
+        clearClosingReveal();
       });
       if(closingScreen instanceof HTMLElement){
         closingScreen.addEventListener("mousemove",(event)=>updateClosingChars(event.clientX,event.clientY));

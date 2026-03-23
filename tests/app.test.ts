@@ -142,9 +142,10 @@ describe("createApp", () => {
     expect(html).toContain("当前更新");
     expect(html).toContain("easeInOutCubic");
     expect(html).toContain("home-track");
+    expect(html).toContain("closing-glyph-reveal");
+    expect(html).toContain("filter:blur(18px)");
     expect(html).not.toContain("stage poster");
     expect(html).not.toContain("poster");
-    expect(html).not.toContain("blur");
     expect(html).not.toContain("Current broadcast");
     expect(html).not.toContain("Contact slice");
     expect(html).not.toContain("home-panel");
