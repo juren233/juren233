@@ -38,12 +38,12 @@ const css = `
   --content: 1200px;
   --transition: 280ms cubic-bezier(.22,1,.36,1);
   --section-gap: clamp(28px,5vw,64px);
-  --fluid-a: rgba(112,138,255,.38);
-  --fluid-b: rgba(255,118,174,.34);
-  --fluid-c: rgba(88,202,186,.32);
-  --fluid-d: rgba(255,184,112,.28);
-  --fluid-e: rgba(176,132,255,.26);
-  --fluid-glow: rgba(255,255,255,.14);
+  --fluid-a: rgba(216,224,248,.34);
+  --fluid-b: rgba(225,219,246,.32);
+  --fluid-c: rgba(215,230,240,.3);
+  --fluid-d: rgba(228,225,238,.28);
+  --fluid-e: rgba(235,229,244,.24);
+  --fluid-glow: rgba(255,255,255,.2);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -321,10 +321,10 @@ textarea{min-height:140px;resize:vertical}
   z-index:0;
   pointer-events:none;
   background:
-    radial-gradient(circle at 18% 16%, rgba(255,255,255,.18), transparent 34%),
-    radial-gradient(circle at 76% 22%, rgba(255,255,255,.08), transparent 28%),
-    linear-gradient(180deg, rgba(255,255,255,.04), transparent 32%, transparent 72%, rgba(17,19,24,.04));
-  opacity:.54;
+    radial-gradient(circle at 18% 16%, rgba(255,255,255,.14), transparent 38%),
+    radial-gradient(circle at 76% 22%, rgba(255,255,255,.06), transparent 32%),
+    linear-gradient(180deg, rgba(255,255,255,.03), transparent 34%, transparent 72%, rgba(17,19,24,.02));
+  opacity:.38;
 }
 .paged-home::after{
   content:"";
@@ -332,8 +332,8 @@ textarea{min-height:140px;resize:vertical}
   inset:0;
   z-index:0;
   pointer-events:none;
-  background:radial-gradient(circle at center, transparent 46%, rgba(17,19,24,.1) 100%);
-  opacity:.24;
+  background:radial-gradient(circle at center, transparent 44%, rgba(17,19,24,.05) 100%);
+  opacity:.12;
   mix-blend-mode:soft-light;
 }
 .fluid-bg{
@@ -342,7 +342,7 @@ textarea{min-height:140px;resize:vertical}
   z-index:0;
   pointer-events:none;
   overflow:hidden;
-  filter:saturate(118%) contrast(102%);
+  filter:saturate(96%) contrast(100%);
 }
 .fluid-canvas-el{
   position:absolute;
@@ -350,8 +350,8 @@ textarea{min-height:140px;resize:vertical}
   width:120%;
   height:120%;
   display:block;
-  opacity:.62;
-  filter:blur(30px) saturate(124%) contrast(104%);
+  opacity:.46;
+  filter:blur(36px) saturate(98%) contrast(100%);
   transform:translate3d(0,0,0);
   will-change:transform;
 }
@@ -482,29 +482,29 @@ textarea{min-height:140px;resize:vertical}
 }
 @media (prefers-color-scheme:dark){
   :root{
-    --bg:#101217;
+    --bg:#171a20;
     --text:#f2efe8;
     --muted:#a8adba;
     --line:rgba(255,255,255,.1);
     --accent:#f3efe7;
     --accent-text:#111318;
-    --fluid-a: rgba(98,128,255,.34);
-    --fluid-b: rgba(255,102,164,.3);
-    --fluid-c: rgba(62,198,178,.28);
-    --fluid-d: rgba(255,174,96,.24);
-    --fluid-e: rgba(168,126,255,.22);
+    --fluid-a: rgba(206,214,242,.16);
+    --fluid-b: rgba(214,208,238,.15);
+    --fluid-c: rgba(202,217,232,.14);
+    --fluid-d: rgba(220,215,232,.13);
+    --fluid-e: rgba(228,222,239,.12);
     --fluid-glow: rgba(255,255,255,.08);
   }
   .paged-home::before{
     background:
-      radial-gradient(circle at 18% 18%, rgba(122,148,255,.1), transparent 34%),
-      radial-gradient(circle at 78% 22%, rgba(255,140,198,.08), transparent 28%),
-      linear-gradient(180deg, rgba(255,255,255,.02), transparent 32%, transparent 72%, rgba(255,255,255,.03));
-    opacity:.64;
+      radial-gradient(circle at 18% 18%, rgba(230,234,248,.06), transparent 38%),
+      radial-gradient(circle at 78% 22%, rgba(239,235,248,.045), transparent 32%),
+      linear-gradient(180deg, rgba(255,255,255,.015), transparent 34%, transparent 72%, rgba(255,255,255,.018));
+    opacity:.34;
   }
   .paged-home::after{
-    background:radial-gradient(circle at center, transparent 48%, rgba(0,0,0,.24) 100%);
-    opacity:.28;
+    background:radial-gradient(circle at center, transparent 46%, rgba(0,0,0,.12) 100%);
+    opacity:.14;
   }
   .admin-pane,.login-panel,.modal-panel{background:rgba(23,26,33,.78);box-shadow:0 24px 60px rgba(0,0,0,.22)}
   .metric,.record-card{background:rgba(255,255,255,.04)}
