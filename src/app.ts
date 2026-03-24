@@ -27,23 +27,23 @@ const fallbackPosts: Post[] = [{
 
 const css = `
 :root{
-  color-scheme: light dark;
-  --bg: #f5f1f6;
-  --text: #16181d;
-  --muted: #5d6472;
-  --line: rgba(16,18,24,.12);
-  --accent: #111318;
-  --accent-text: #f7f4ed;
+  color-scheme: dark;
+  --bg:#252339;
+  --text:#f2efe8;
+  --muted:#a8adba;
+  --line:rgba(255,255,255,.1);
+  --accent:#f3efe7;
+  --accent-text:#111318;
   --gutter: clamp(20px,4vw,56px);
   --content: 1200px;
   --transition: 280ms cubic-bezier(.22,1,.36,1);
   --section-gap: clamp(28px,5vw,64px);
-  --fluid-a: rgba(192,214,255,.38);
-  --fluid-b: rgba(223,202,255,.36);
-  --fluid-c: rgba(246,206,236,.32);
-  --fluid-d: rgba(204,226,255,.28);
-  --fluid-e: rgba(238,216,248,.26);
-  --fluid-glow: rgba(255,246,252,.28);
+  --fluid-a: rgba(198,213,255,.34);
+  --fluid-b: rgba(226,199,255,.32);
+  --fluid-c: rgba(250,192,233,.26);
+  --fluid-d: rgba(201,222,255,.28);
+  --fluid-e: rgba(238,206,248,.22);
+  --fluid-glow: rgba(255,244,250,.12);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -142,11 +142,11 @@ img,svg{display:block;max-width:100%}
   border-color:var(--line);
 }
 .admin-pane,.login-panel,.modal-panel{
-  background:rgba(255,255,255,.76);
+  background:rgba(23,26,33,.78);
   border:1px solid var(--line);
   border-radius:24px;
   padding:clamp(22px,3vw,34px);
-  box-shadow:0 18px 48px rgba(15,20,30,.08);
+  box-shadow:0 24px 60px rgba(0,0,0,.22);
 }
 form{display:grid;gap:14px}
 label{display:grid;gap:8px;font-size:14px}
@@ -155,7 +155,7 @@ input,textarea,select{
   padding:14px 16px;
   border-radius:16px;
   border:1px solid var(--line);
-  background:rgba(255,255,255,.86);
+  background:rgba(28,32,40,.9);
   color:var(--text);
 }
 textarea{min-height:140px;resize:vertical}
@@ -206,7 +206,7 @@ textarea{min-height:140px;resize:vertical}
   width:42px;
   height:42px;
   border-radius:999px;
-  background:rgba(255,255,255,.86);
+  background:rgba(28,32,40,.9);
   color:var(--text);
   border:1px solid var(--line);
 }
@@ -491,7 +491,7 @@ textarea{min-height:140px;resize:vertical}
     transform:translateY(0) scale(1);
   }
 }
-@media (prefers-color-scheme:dark){
+@media all{
   :root{
     --bg:#252339;
     --text:#f2efe8;
@@ -663,7 +663,7 @@ function home(posts: Post[]) {
       let touchCurrentY=null;
       let touchStartedAt=0;
       const prefersReducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
-      const prefersDark=window.matchMedia("(prefers-color-scheme: dark)");
+      const isDarkTheme=true;
       const easeInOutCubic=(t)=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
       const clampIndex=(value)=>Math.max(0,Math.min(screens.length-1,value));
       const initFluid=()=>{
@@ -732,10 +732,10 @@ function home(posts: Post[]) {
             }));
             seed=Math.random()*1000;
             phaseOffsets=Array.from({length:6},()=>Math.random()*Math.PI*2+seed);
-            warpScaleX=1+Math.random()*.26;
-            warpScaleY=.98+Math.random()*.28;
-            speedA=1.04+Math.random()*.18;
-            speedB=1.02+Math.random()*.18;
+            warpScaleX=1.08+Math.random()*.32;
+            warpScaleY=1.04+Math.random()*.34;
+            speedA=1.12+Math.random()*.2;
+            speedB=1.1+Math.random()*.2;
           }
           if(forcePalette){
             rebuildFluidBuffers();
@@ -765,8 +765,8 @@ function home(posts: Post[]) {
               const ny=y/fieldHeight*2-1;
               const warpA=Math.sin((nx*1.9+ny*.42)*warpScaleX+t*speedA+phaseOffsets[0])+Math.cos((ny*1.36-nx*.58)*warpScaleY-t*.84*speedB+phaseOffsets[1]);
               const warpB=Math.cos((nx*1.18-ny*1.62)*warpScaleY-t*.72*speedB+phaseOffsets[2])+Math.sin((nx*.86+ny*1.54)*warpScaleX+t*.96*speedA+phaseOffsets[3]);
-              const ux=nx+warpA*.18+Math.sin(ny*1.72+t*1.04+phaseOffsets[4])*.08;
-              const uy=ny+warpB*.16+Math.cos(nx*1.56-t*.84+phaseOffsets[5])*.07;
+              const ux=nx+warpA*.22+Math.sin(ny*1.72+t*1.12+phaseOffsets[4])*.1;
+              const uy=ny+warpB*.2+Math.cos(nx*1.56-t*.9+phaseOffsets[5])*.09;
               const bandA=.5+.5*Math.sin(ux*2.6+uy*1.9+t*1.08+phaseOffsets[0]);
               const bandB=.5+.5*Math.cos(ux*2.1-uy*2.4-t*.94+phaseOffsets[1]);
               const bandC=.5+.5*Math.sin((ux+uy)*1.8+t*.86+phaseOffsets[2]);
@@ -776,7 +776,7 @@ function home(posts: Post[]) {
               const veilC=veilCurve((uy-ux*.34)+.16*Math.sin((ux+uy)*1.5+t*.92+phaseOffsets[2])-veils[2].offset*.22,veils[2].width)*(.68+.32*bandC);
               const veilD=veilCurve((uy+ux*.26)+.14*Math.cos((ux-uy)*1.7-t*.98+phaseOffsets[3])-veils[3].offset*.2,veils[3].width)*(.66+.34*bandD);
               const sheen=Math.pow(.5+.5*Math.sin(ux*2.3-uy*1.5+t*1.66+phaseOffsets[4]),4)*Math.max(veilA,veilB,veilC,veilD);
-              const density=Math.max(veilA,veilB,veilC,veilD)*.84+sheen*.24;
+              const density=Math.max(veilA,veilB,veilC,veilD)*.88+sheen*.28;
               const alpha=smoothstep(threshold,falloff,density);
               if(alpha<=.001){
                 data[i]=0; data[i+1]=0; data[i+2]=0; data[i+3]=0;
@@ -807,7 +807,7 @@ function home(posts: Post[]) {
               data[i]=Math.round(r);
               data[i+1]=Math.round(g);
               data[i+2]=Math.round(b);
-              data[i+3]=Math.round(edge*colorPresence*(prefersDark.matches?108:92));
+              data[i+3]=Math.round(edge*colorPresence*(isDarkTheme?122:98));
             }
           }
           fieldCtx.putImageData(fieldImage,0,0);
@@ -821,7 +821,7 @@ function home(posts: Post[]) {
           renderField(time);
           if(fieldCanvas){
             ctx.globalCompositeOperation="source-over";
-            ctx.globalAlpha=prefersDark.matches ? .68 : .52;
+            ctx.globalAlpha=isDarkTheme ? .74 : .56;
             ctx.imageSmoothingEnabled=true;
             ctx.drawImage(fieldCanvas,0,0,fieldWidth,fieldHeight,0,0,width,height);
             ctx.globalAlpha=1;
@@ -830,10 +830,6 @@ function home(posts: Post[]) {
         resizeFluid(true);
         frameFluid(performance.now());
         window.addEventListener("resize",resizeFluid);
-        prefersDark.addEventListener?.("change",()=>{
-          palette=[];
-          resizeFluid(true);
-        });
       };
       const clearClosingReveal=(hide=true)=>{
         if(closingRevealStartTimer){
